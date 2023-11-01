@@ -21,6 +21,7 @@ public class SwerveModule {
         turnMotor = new CANSparkMax(turnID, CANSparkMaxLowLevel.MotorType.kBrushless);
         wheelMotor = new CANSparkMax(wheelID, CANSparkMaxLowLevel.MotorType.kBrushless);
         turnMotorEncoder = turnMotor.getEncoder();
+        turnMotorEncoder.setPosition(0);
         wheelEncoder = wheelMotor.getEncoder();
         //can set pid values here
     }
