@@ -28,8 +28,17 @@ public class SwerveModule {
         //can set pid values here
     }
 
-    //needs a value 0-360
-    public void turnToAngle(double targetAngle){
+    //needs a value 0-360 as target angle
+    public void turnToAngle(double targetAngle, double encoderVal){
+        double currentAngle = correctedAngle(encoderVal);
+        double reflectedTargetAngle = (targetAngle+180.0)%360.0;
+        double offset;
+        if(Math.abs(angleOffset(targetAngle, currentAngle))<90){
+            offset = angleOffset(encoderVal, targetAngle);
+        } else {
+            offset = angleOffset(encoderVal, reflectedTargetAngle);
+        }
+
         turnPID.setReference((targetAngle/360.0)*12.8, CANSparkMax.ControlType.kPosition);
     }
 
@@ -37,15 +46,15 @@ public class SwerveModule {
         wheelPID.setReference(speed, CANSparkMax.ControlType.kVelocity);
     }
 
-    // Takes 2 angles and finds the distance between them
-    public double angleDistance(double angle1, double angle2){
-        double corrected1 = correctedAngle(angle1);
-        double corrected2 = correctedAngle(angle2);
-        double distance = Math.abs(corrected1-corrected2);
+    // finds number need to change start to end
+    public double angleOffset(double start, double end){
+        double correctedStart = correctedAngle(start);
+        double correctedEnd = correctedAngle(end);
+        double distance = Math.abs(correctedStart-correctedEnd);
         if(distance < 180){
-            return distance;
+            return correctedEnd-correctedStart;
         } else{
-            return 360-distance;
+            return -(360-distance);
         }
     }
 
