@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.utils.SwerveModuleConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -95,5 +96,47 @@ public final class Constants {
     /** Idle modes. */
     public static final IdleMode kDriveIdleMode = IdleMode.kBrake;
     public static final IdleMode kAngleIdleMode = IdleMode.kCoast;
+
+    /** 
+     * Module specific constants.
+     * CanCoder offset is in DEGREES, not radians like the rest of the repo.
+     * This is to make offset slightly more accurate and easier to measure.
+     */
+
+     //FrontLeft
+    public static final SwerveModuleConstants MOD_0_Constants = new SwerveModuleConstants(
+      4,
+      5,
+      0,
+      //203.115234
+      352.97
+    );
+
+    //FrontRight
+    public static final SwerveModuleConstants MOD_1_Constants = new SwerveModuleConstants(
+      6,
+      7,
+      3,
+      //191.074219  
+      344.53
+    );
+
+    //BackLeft
+    public static final SwerveModuleConstants MOD_2_Constants = new SwerveModuleConstants(
+      10,
+      11,
+      2,
+      //203.906250
+      7.03
+    );
+
+    //BackRight
+    public static final SwerveModuleConstants MOD_3_Constants = new SwerveModuleConstants(
+      8,
+      9,
+      1,
+      //155.214844
+      114.7
+    );
   }
 }

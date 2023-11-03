@@ -5,11 +5,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.utils.SwerveModule;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,11 +18,6 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-
-  //For testing purposes
-  public SwerveModule  mod1 = new SwerveModule(0, 0, 0);
-  public double test_val = 0;
-  public XboxController testController = new XboxController(0);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -89,14 +81,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
-    mod1.setSpeed(60);
-    mod1.turnToAngle(test_val);
-    if (testController.getXButtonPressed()){
-      test_val += 90;
-    }
-    SmartDashboard.putNumber("CANcoder value:", mod1.absoluteAngleEncoder.getPosition());
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void testInit() {
