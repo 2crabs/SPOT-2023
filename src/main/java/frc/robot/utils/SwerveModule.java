@@ -1,8 +1,10 @@
-package frc.robot;
+package frc.robot.utils;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.*;
 import edu.wpi.first.math.Pair;
+import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 
 public class SwerveModule {
     public CANSparkMax turnMotor;
