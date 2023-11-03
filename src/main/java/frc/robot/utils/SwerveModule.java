@@ -4,7 +4,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.*;
 import edu.wpi.first.math.Pair;
 import frc.robot.Constants;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.kSwerve;;
 
 public class SwerveModule {
     public CANSparkMax turnMotor;
@@ -23,8 +23,8 @@ public class SwerveModule {
     public SwerveModule (int turnID, int wheelID, int encoderID) {
         turnMotor = new CANSparkMax(turnID, CANSparkMaxLowLevel.MotorType.kBrushless);
         wheelMotor = new CANSparkMax(wheelID, CANSparkMaxLowLevel.MotorType.kBrushless);
-        turnMotor.setSmartCurrentLimit(Constants.DriveConstants.turnCurrentLimit);
-        wheelMotor.setSmartCurrentLimit(Constants.DriveConstants.driveCurrentLimit);
+        turnMotor.setSmartCurrentLimit(Constants.kSwerve.kAngleCurrentLimit);
+        wheelMotor.setSmartCurrentLimit(Constants.kSwerve.kDriveCurrentLimit);
 
         turnPID = turnMotor.getPIDController();
         wheelPID = wheelMotor.getPIDController();
@@ -39,8 +39,10 @@ public class SwerveModule {
     }
 
     public void configurePID(){
-
+        
     }
+
+    
 
     //needs a value 0-360 as target angle
     public void turnToAngle(double targetAngle){
