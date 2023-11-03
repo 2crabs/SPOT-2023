@@ -16,4 +16,19 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+  public static class DriveConstants{
+    //
+    public static final double turnP = 0.01;
+    public static final double turnI = 0.0;
+    public static final double turnD = 0.0;
+
+    //
+    public static final double driveP = 0.01;
+    public static final double driveI = 0.0;
+    public static final double driveD = 0.0;
+
+    //How many rotations it takes to the neo to rotate the module once
+    public static final double turnGearing = 12.8;
+  }
 }
