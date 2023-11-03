@@ -21,6 +21,8 @@ public class SwerveModule {
     public SwerveModule (int turnID, int wheelID, int encoderID) {
         turnMotor = new CANSparkMax(turnID, CANSparkMaxLowLevel.MotorType.kBrushless);
         wheelMotor = new CANSparkMax(wheelID, CANSparkMaxLowLevel.MotorType.kBrushless);
+        turnMotor.setSmartCurrentLimit(Constants.DriveConstants.turnCurrentLimit);
+        wheelMotor.setSmartCurrentLimit(Constants.DriveConstants.driveCurrentLimit);
 
         turnPID = turnMotor.getPIDController();
         wheelPID = wheelMotor.getPIDController();
