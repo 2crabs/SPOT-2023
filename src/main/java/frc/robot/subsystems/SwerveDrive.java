@@ -64,6 +64,25 @@ public class SwerveDrive extends SubsystemBase {
     }).withName("SwerveDriveBase");
   }
 
+  public Command jogTurnMotors(double speed, boolean isOpenLoop) {
+    return run(() -> {
+      ChassisSpeeds chassisSpeeds = new ChassisSpeeds(speed, 0, 0);
+      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
+
+      setModuleStates(states, isOpenLoop);
+    });
+  }
+
+  public Command CANCoderTuningCommand() {
+    return run(() -> {
+      SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
+      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getCanCoder());
+      SmartDashboard.putNumber("FrontRight - 1", modules[1].getCanCoder());
+      SmartDashboard.putNumber("BackLeft - 2", modules[2].getCanCoder());
+      SmartDashboard.putNumber("BackRight - 3", modules[3].getCanCoder());
+    }).withName("CANCoderTuning");
+  }
+
   public String getModuleString(int index) {
     if(index == 0) {
       return new String("FrontLeft");
