@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.*;
+import edu.wpi.first.math.Pair;
 
 public class SwerveModule {
     public CANSparkMax turnMotor;
@@ -14,11 +15,16 @@ public class SwerveModule {
     public SparkMaxPIDController turnPID;
     public SparkMaxPIDController wheelPID;
 
-    public boolean isAngleReversed;
+    //used to determine if the wheel should drive backwards or forwards
+    public boolean isWheelReversed;
 
     public SwerveModule (int turnID, int wheelID, int encoderID) {
         turnMotor = new CANSparkMax(turnID, CANSparkMaxLowLevel.MotorType.kBrushless);
         wheelMotor = new CANSparkMax(wheelID, CANSparkMaxLowLevel.MotorType.kBrushless);
+
+        turnPID = turnMotor.getPIDController();
+        wheelPID = wheelMotor.getPIDController();
+        configurePID();
 
         absoluteAngleEncoder = new CANCoder(encoderID);
 
@@ -28,25 +34,46 @@ public class SwerveModule {
         //can set pid values here
     }
 
-    //needs a value 0-360 as target angle
-    public void turnToAngle(double targetAngle, double encoderVal){
-        double currentAngle = correctedAngle(encoderVal);
-        double reflectedTargetAngle = (targetAngle+180.0)%360.0;
-        double offset;
-        if(Math.abs(angleOffset(targetAngle, currentAngle))<90){
-            offset = angleOffset(encoderVal, targetAngle);
-        } else {
-            offset = angleOffset(encoderVal, reflectedTargetAngle);
-        }
+    public void configurePID(){
 
-        turnPID.setReference((targetAngle/360.0)*12.8, CANSparkMax.ControlType.kPosition);
     }
+
+    //needs a value 0-360 as target angle
+    public void turnToAngle(double targetAngle){
+        //turns motor rotations into module degrees
+        double currentRotation = (turnMotorEncoder.getPosition()/12.8)*360.0;
+        double closestAngle = efficientAngle(targetAngle, currentRotation);
+        turnPID.setReference((closestAngle/360.0)*12.8, CANSparkMax.ControlType.kPosition);
+    }
+
 
     public void setSpeed(double speed){
-        wheelPID.setReference(speed, CANSparkMax.ControlType.kVelocity);
+        if (isWheelReversed) {
+            wheelPID.setReference(speed, CANSparkMax.ControlType.kVelocity);
+        } else {
+            wheelPID.setReference(-speed, CANSparkMax.ControlType.kVelocity);
+        }
     }
 
-    // finds number need to change start to end
+    /**
+     * Finds the closest angle to currentVal that makes it equal to targetAngle or the reflection of the target angle
+     * @param targetAngle Angle to go (0 to 360)
+     */
+    public double efficientAngle(double targetAngle, double currentVal){
+        double currentAngle = correctedAngle(currentVal);
+        double reflectedTargetAngle = (targetAngle+180.0)%360.0;
+        double offset;
+        if(Math.abs(angleOffset(currentAngle, targetAngle))<90){
+            isWheelReversed = false;
+            offset = angleOffset(currentAngle, targetAngle);
+        } else {
+            isWheelReversed = true;
+            offset = angleOffset(currentAngle, reflectedTargetAngle);
+        }
+        return currentVal+offset;
+    }
+
+    // finds angle needed to change start to end
     public double angleOffset(double start, double end){
         double correctedStart = correctedAngle(start);
         double correctedEnd = correctedAngle(end);
@@ -54,7 +81,11 @@ public class SwerveModule {
         if(distance < 180){
             return correctedEnd-correctedStart;
         } else{
-            return -(360-distance);
+            if(end>start){
+                return -(360-distance);
+            } else{
+                return 360-distance;
+            }
         }
     }
 
