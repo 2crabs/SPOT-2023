@@ -85,7 +85,7 @@ public final class Constants {
     public static final double ANGLE_KF = 0.0;
     
     /** Swerve constraints. */
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 3.0;
+    public static final double MAX_VELOCITY_METERS_PER_SECOND = 2.0;
     public static final double MAX_ANGULAR_RADIANS_PER_SECOND = 4.0;
 
     /** Inversions. */
@@ -109,7 +109,7 @@ public final class Constants {
       5,
       0,
       //203.115234
-      352.97
+      -352.97
     );
 
     //FrontRight
@@ -118,7 +118,7 @@ public final class Constants {
       7,
       3,
       //191.074219  
-      344.53
+      -344.53
     );
 
     //BackLeft
@@ -127,7 +127,7 @@ public final class Constants {
       11,
       2,
       //203.906250
-      7.03
+      -7.03
     );
 
     //BackRight
@@ -136,7 +136,7 @@ public final class Constants {
       9,
       1,
       //155.214844
-      114.7
+      -114.7
     );
   }
 }

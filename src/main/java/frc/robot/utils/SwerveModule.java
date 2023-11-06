@@ -68,13 +68,12 @@ public class SwerveModule {
       wheelPID.setReference(state.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity, 0, wheelFeedforward.calculate(state.speedMetersPerSecond));
     }
 
-    // Fancy ahh if/else 
     double angle = state.angle.getRadians();
-    if (Math.abs(state.speedMetersPerSecond) <= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND) {
-      angle = lastAngle;
-    }
+    //if (Math.abs(state.speedMetersPerSecond) <= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND) {
+    //  angle = lastAngle;
+    //}
 
-    //turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
+    turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
     lastAngle = angle;
   }
 
@@ -190,8 +189,9 @@ public class SwerveModule {
 
     turnEncoder.setPositionConversionFactor(Constants.kSwerve.kAngleRotationsToRadians);
     turnEncoder.setVelocityConversionFactor(Constants.kSwerve.kAngleRpmToRadiansPerSecond);
-    turnEncoder.setPosition(((canCoder.getAbsolutePosition()-canCoderOffsetDegrees)/360.0)*12.8*5.0);
+    turnEncoder.setPosition(Math.toRadians(canCoder.getAbsolutePosition()+canCoderOffsetDegrees));
+    //turnEncoder.setPosition(0);
 
-    SmartDashboard.putNumber("StartRotations" + moduleNumber, ((canCoderOffsetDegrees - canCoder.getAbsolutePosition())/360.0)*12.8);
+    SmartDashboard.putNumber("StartRotations" + moduleNumber, canCoder.getAbsolutePosition());
   }
 }
