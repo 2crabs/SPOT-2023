@@ -100,26 +100,26 @@ public class SwerveModule {
   private void configureDevices() {
     // Drive motor configuration.
     wheelMotor.restoreFactoryDefaults();
-    wheelMotor.setInverted(Constants.kSwerve.kDriveMotorReversed);
-    wheelMotor.setIdleMode(Constants.kSwerve.kDriveIdleMode);
-    wheelMotor.setOpenLoopRampRate(Constants.kSwerve.kOpenLoopRamp);
-    wheelMotor.setClosedLoopRampRate(Constants.kSwerve.kClosedLoopRamp);
-    wheelMotor.setSmartCurrentLimit(Constants.kSwerve.kDriveCurrentLimit);
+    wheelMotor.setInverted(Constants.kSwerve.DRIVE_MOTOR_REVERSED);
+    wheelMotor.setIdleMode(Constants.kSwerve.DRIVE_IDLE_MODE);
+    wheelMotor.setOpenLoopRampRate(Constants.kSwerve.OPEN_LOOP_RAMP);
+    wheelMotor.setClosedLoopRampRate(Constants.kSwerve.CLOSED_LOOP_RAMP);
+    wheelMotor.setSmartCurrentLimit(Constants.kSwerve.DRIVE_CURRENT_LIMIT);
  
     wheelPID.setP(Constants.kSwerve.DRIVE_KP);
     wheelPID.setI(Constants.kSwerve.DRIVE_KI);
     wheelPID.setD(Constants.kSwerve.DRIVE_KD);
     wheelPID.setFF(Constants.kSwerve.DRIVE_KF);
  
-    wheelEncoder.setPositionConversionFactor(Constants.kSwerve.kDriveRotationsToMeters);
-    wheelEncoder.setVelocityConversionFactor(Constants.kSwerve.kDriveRpmToMetersPerSecond);
+    wheelEncoder.setPositionConversionFactor(Constants.kSwerve.DRIVE_ROTATIONS_TO_METERS);
+    wheelEncoder.setVelocityConversionFactor(Constants.kSwerve.DRIVE_RPM_TO_METERS_PER_SECOND);
     wheelEncoder.setPosition(0);
 
     // Angle motor configuration.
     turnMotor.restoreFactoryDefaults();
-    turnMotor.setInverted(Constants.kSwerve.kAngleMotorReversed);
-    turnMotor.setIdleMode(Constants.kSwerve.kAngleIdleMode);
-    turnMotor.setSmartCurrentLimit(Constants.kSwerve.kAngleCurrentLimit);
+    turnMotor.setInverted(Constants.kSwerve.ANGLE_MOTOR_REVERSED);
+    turnMotor.setIdleMode(Constants.kSwerve.ANGLE_IDLE_MODE);
+    turnMotor.setSmartCurrentLimit(Constants.kSwerve.ANGLE_CURRENT_LIMIT);
 
     turnPID.setP(Constants.kSwerve.ANGLE_KP);
     turnPID.setI(Constants.kSwerve.ANGLE_KI);
@@ -137,7 +137,7 @@ public class SwerveModule {
     // CanCoder configuration.
     CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
     canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
-    canCoderConfiguration.sensorDirection = Constants.kSwerve.kCanCoderReversed;
+    canCoderConfiguration.sensorDirection = Constants.kSwerve.CAN_CODER_REVERSED;
     canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
     canCoderConfiguration.sensorTimeBase = SensorTimeBase.PerSecond;
     
@@ -146,8 +146,8 @@ public class SwerveModule {
 
     SmartDashboard.putNumber("Start" + moduleNumber, canCoder.getAbsolutePosition());
 
-    turnEncoder.setPositionConversionFactor(Constants.kSwerve.kAngleRotationsToRadians);
-    turnEncoder.setVelocityConversionFactor(Constants.kSwerve.kAngleRpmToRadiansPerSecond);
+    turnEncoder.setPositionConversionFactor(Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
+    turnEncoder.setVelocityConversionFactor(Constants.kSwerve.ANGLE_RPM_TO_RADIANS_PER_SECOND);
     turnEncoder.setPosition(Math.toRadians(canCoder.getAbsolutePosition()+canCoderOffsetDegrees));
     //turnEncoder.setPosition(0);
 
