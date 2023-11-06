@@ -96,48 +96,7 @@ public class SwerveModule {
     Rotation2d rot = new Rotation2d(turnEncoder.getPosition());
     return new SwerveModulePosition(distance, rot);
   }
-
-  /*
-  public double efficientAngle(double targetAngle, double currentVal){
-    double currentAngle = correctedAngle(currentVal);
-    double reflectedTargetAngle = (targetAngle+180.0)%360.0;
-    double offset;
-    if(Math.abs(angleOffset(currentAngle, targetAngle))<90){
-      isWheelReversed = false;
-      offset = angleOffset(currentAngle, targetAngle);
-    } else {
-      isWheelReversed = true;
-      offset = angleOffset(currentAngle, reflectedTargetAngle);
-    }
-    return currentVal+offset;
-  }
-
-  // finds angle needed to change start to end
-  public double angleOffset(double start, double end){
-    double correctedStart = correctedAngle(start);
-    double correctedEnd = correctedAngle(end);
-    double distance = Math.abs(correctedStart-correctedEnd);
-    if(distance < 180){
-      return correctedEnd-correctedStart;
-    } else{
-      if(end>start){
-        return -(360-distance);
-      } else{
-        return 360-distance;
-      }
-    }
-
-    // Takes angle and turns it into equivalent angle in range 0-360
-    public double correctedAngle(double angle){
-      if(angle%360.0 < 0.0){
-        return angle%360.0 + 360.0;
-      } else {
-        return angle%360.0;
-      }
-    }
-  }
-  */
-
+  
   private void configureDevices() {
     // Drive motor configuration.
     wheelMotor.restoreFactoryDefaults();
