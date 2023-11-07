@@ -52,15 +52,15 @@ public class SwerveDrive extends SubsystemBase {
 
       SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
       for (int i = 0; i < modules.length; i++) {
-        System.out.println(getModuleString(i) + modules[i].getCanCoder());
+        System.out.println(getModuleString(i) + modules[i].getTurnCANCoder());
       }
 
 
 
-      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getCanCoder());
-      SmartDashboard.putNumber("FrontRight - 1", modules[1].getCanCoder());
-      SmartDashboard.putNumber("BackLeft - 2", modules[2].getCanCoder());
-      SmartDashboard.putNumber("BackRight - 3", modules[3].getCanCoder());
+      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getTurnCANCoder());
+      SmartDashboard.putNumber("FrontRight - 1", modules[1].getTurnCANCoder());
+      SmartDashboard.putNumber("BackLeft - 2", modules[2].getTurnCANCoder());
+      SmartDashboard.putNumber("BackRight - 3", modules[3].getTurnCANCoder());
     }).withName("SwerveDriveBase");
   }
 
@@ -76,10 +76,10 @@ public class SwerveDrive extends SubsystemBase {
   public Command CANCoderTuningCommand() {
     return run(() -> {
       SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
-      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getCanCoder());
-      SmartDashboard.putNumber("FrontRight - 1", modules[1].getCanCoder());
-      SmartDashboard.putNumber("BackLeft - 2", modules[2].getCanCoder());
-      SmartDashboard.putNumber("BackRight - 3", modules[3].getCanCoder());
+      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getTurnCANCoder());
+      SmartDashboard.putNumber("FrontRight - 1", modules[1].getTurnCANCoder());
+      SmartDashboard.putNumber("BackLeft - 2", modules[2].getTurnCANCoder());
+      SmartDashboard.putNumber("BackRight - 3", modules[3].getTurnCANCoder());
     }).withName("CANCoderTuning");
   }
 

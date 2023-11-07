@@ -30,16 +30,16 @@ public class SwerveModule {
   private final RelativeEncoder turnEncoder;
   private final SparkMaxPIDController turnPID;
   
-  private final CANCoder canCoder;
-  private final double canCoderOffsetDegrees;
+  private final CANCoder turnCANCoder;
+  private final double CANCoderOffsetDegrees;
 
   private double lastAngle;
 
-  public SwerveModule(int moduleNumber, SwerveModuleConstants constants) {
+  public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
     this.moduleNumber = moduleNumber;
     
-    turnMotor = new CANSparkMax(constants.turnMotorID, MotorType.kBrushless);
-    wheelMotor = new CANSparkMax(constants.wheelMotorID, MotorType.kBrushless);
+    turnMotor = new CANSparkMax(moduleConstants.turnMotorID, MotorType.kBrushless);
+    wheelMotor = new CANSparkMax(moduleConstants.wheelMotorID, MotorType.kBrushless);
     
     wheelPID = wheelMotor.getPIDController();
     turnPID = turnMotor.getPIDController();
@@ -47,8 +47,8 @@ public class SwerveModule {
     wheelEncoder = wheelMotor.getEncoder();
     turnEncoder = turnMotor.getEncoder();
 
-    canCoder = new CANCoder(constants.canCoderID);
-    canCoderOffsetDegrees = constants.canCoderOffsetDegrees;
+    turnCANCoder = new CANCoder(moduleConstants.canCoderID);
+    CANCoderOffsetDegrees = moduleConstants.canCoderOffsetDegrees;
 
     wheelFeedforward = new SimpleMotorFeedforward(Constants.kSwerve.DRIVE_KS, Constants.kSwerve.DRIVE_KV, Constants.kSwerve.DRIVE_KA);
 
@@ -83,8 +83,8 @@ public class SwerveModule {
     return new SwerveModuleState(velocity, angle);
   }
 
-  public double getCanCoder() {
-    return canCoder.getAbsolutePosition();
+  public double getTurnCANCoder() {
+    return turnCANCoder.getAbsolutePosition();
   }
 
   public Rotation2d getAngle() {
@@ -141,16 +141,16 @@ public class SwerveModule {
     canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
     canCoderConfiguration.sensorTimeBase = SensorTimeBase.PerSecond;
     
-    canCoder.configFactoryDefault();
-    canCoder.configAllSettings(canCoderConfiguration);
+    turnCANCoder.configFactoryDefault();
+    turnCANCoder.configAllSettings(canCoderConfiguration);
 
-    SmartDashboard.putNumber("Start" + moduleNumber, canCoder.getAbsolutePosition());
+    SmartDashboard.putNumber("Start" + moduleNumber, turnCANCoder.getAbsolutePosition());
 
     turnEncoder.setPositionConversionFactor(Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
     turnEncoder.setVelocityConversionFactor(Constants.kSwerve.ANGLE_RPM_TO_RADIANS_PER_SECOND);
-    turnEncoder.setPosition(Math.toRadians(canCoder.getAbsolutePosition()+canCoderOffsetDegrees));
+    turnEncoder.setPosition(Math.toRadians(turnCANCoder.getAbsolutePosition()+ CANCoderOffsetDegrees));
     //turnEncoder.setPosition(0);
 
-    SmartDashboard.putNumber("StartRotations" + moduleNumber, canCoder.getAbsolutePosition());
+    SmartDashboard.putNumber("StartRotations" + moduleNumber, turnCANCoder.getAbsolutePosition());
   }
 }
