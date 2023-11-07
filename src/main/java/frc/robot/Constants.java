@@ -104,7 +104,7 @@ public final class Constants {
      */
 
      //FrontLeft
-    public static final SwerveModuleConstants MOD_0_Constants = new SwerveModuleConstants(
+    public static final SwerveModuleConstants FRONT_LEFT_MODULE = new SwerveModuleConstants(
       4,
       5,
       0,
@@ -113,7 +113,7 @@ public final class Constants {
     );
 
     //FrontRight
-    public static final SwerveModuleConstants MOD_1_Constants = new SwerveModuleConstants(
+    public static final SwerveModuleConstants FRONT_RIGHT_MODULE = new SwerveModuleConstants(
       6,
       7,
       3,
@@ -122,7 +122,7 @@ public final class Constants {
     );
 
     //BackLeft
-    public static final SwerveModuleConstants MOD_2_Constants = new SwerveModuleConstants(
+    public static final SwerveModuleConstants BACK_LEFT_MODULE = new SwerveModuleConstants(
       10,
       11,
       2,
@@ -131,7 +131,7 @@ public final class Constants {
     );
 
     //BackRight
-    public static final SwerveModuleConstants MOD_3_Constants = new SwerveModuleConstants(
+    public static final SwerveModuleConstants BACK_RIGHT_MODULE = new SwerveModuleConstants(
       8,
       9,
       1,

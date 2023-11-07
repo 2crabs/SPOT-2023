@@ -21,10 +21,10 @@ public class SwerveDrive extends SubsystemBase {
 
   public SwerveDrive() {
     modules = new SwerveModule[] {
-      new SwerveModule(0, Constants.kSwerve.MOD_0_Constants),
-      new SwerveModule(1, Constants.kSwerve.MOD_1_Constants),
-      new SwerveModule(2, Constants.kSwerve.MOD_2_Constants),
-      new SwerveModule(3, Constants.kSwerve.MOD_3_Constants),
+      new SwerveModule(0, Constants.kSwerve.FRONT_LEFT_MODULE),
+      new SwerveModule(1, Constants.kSwerve.FRONT_RIGHT_MODULE),
+      new SwerveModule(2, Constants.kSwerve.BACK_LEFT_MODULE),
+      new SwerveModule(3, Constants.kSwerve.BACK_RIGHT_MODULE),
     };
   }
 
