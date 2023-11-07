@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
