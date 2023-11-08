@@ -18,6 +18,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
+/**
+ * A single swerve module. This class handles the pid controllers and encoders for the swerve Module.
+ */
 public class SwerveModule {
 
   private final CANSparkMax wheelMotor;
@@ -26,14 +29,18 @@ public class SwerveModule {
   private final SimpleMotorFeedforward wheelFeedforward;
 
   private final CANSparkMax turnMotor;
+  /**
+   * Integrated encoder for the angle motor
+   */
   private final RelativeEncoder turnEncoder;
   private final SparkMaxPIDController turnPID;
   
   private final CANCoder turnCANCoder;
   private final double CANCoderOffsetDegrees;
 
-  private double lastAngle;
-
+  /**
+   * @param moduleConstants The constants used to set up the device ids on the can bus. These can be changed in {@link Constants}
+   */
   public SwerveModule(SwerveModuleConstants moduleConstants) {
     
     turnMotor = new CANSparkMax(moduleConstants.turnMotorID, MotorType.kBrushless);
@@ -52,7 +59,6 @@ public class SwerveModule {
 
     configureDevices();
 
-    lastAngle = getState().angle.getRadians();
   }
 
   public void setState(SwerveModuleState state, boolean isOpenLoop) {
@@ -72,7 +78,6 @@ public class SwerveModule {
     //}
 
     turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
-    lastAngle = angle;
   }
 
   public SwerveModuleState getState() {
@@ -81,14 +86,19 @@ public class SwerveModule {
     return new SwerveModuleState(velocity, angle);
   }
 
-  public double getTurnCANCoder() {
+  public double getCANCoderPosition() {
     return turnCANCoder.getAbsolutePosition();
   }
 
+  /**
+   * Returns the angle of the turn motor. <b>NOT</b> the angle of the module
+   * @return Angle of neo turn motor
+   */
   public Rotation2d getAngle() {
     return new Rotation2d(turnEncoder.getPosition());
   }
 
+  //FIXME
   public SwerveModulePosition getPosition() {
     double distance = wheelEncoder.getPosition();
     Rotation2d rot = new Rotation2d(turnEncoder.getPosition());

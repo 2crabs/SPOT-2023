@@ -68,12 +68,18 @@ public class SwerveDrive extends SubsystemBase {
     // Makes sure the robot doesnt create a sonic boom (normalizes the speed if the magnitude is over a certain threshold)
     SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND);
 
+    // iterates though the modules and gets state based on position (ModulePosition)
     modules.forEach(
             (key, value)->
                     value.setState(states[positionAsNumber(key)], isOpenLoop)
     );
   }
 
+  /**
+   * This function is needed to convert between ModulePosition and an index uses in a SwerveModuleState array
+   * @param modulePosition The position of the module
+   * @return The corresponding index in the list returned by toSwerveModuleStates
+   */
   public int positionAsNumber(ModulePosition modulePosition){
     switch (modulePosition){
       case FRONT_LEFT: return 0;
