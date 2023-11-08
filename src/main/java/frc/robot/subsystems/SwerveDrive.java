@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 
@@ -20,10 +21,10 @@ import frc.robot.utils.SwerveModule;
 import frc.robot.utils.SwerveModuleConstants;
 
 public class SwerveDrive extends SubsystemBase {
-  private final HashMap<ModulePosition,SwerveModule> modules;
+  private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
-    modules = new HashMap<ModulePosition,SwerveModule>();
+    modules = new EnumMap<>(ModulePosition.class);
     modules.put(ModulePosition.FRONT_LEFT, new SwerveModule(Constants.kSwerve.FRONT_LEFT_MODULE));
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
