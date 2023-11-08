@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModuleConstants;
 
 /**
@@ -108,8 +109,8 @@ public final class Constants {
       4,
       5,
       0,
-      //203.115234
-      -352.97
+      -352.97,
+      ModulePosition.FRONT_LEFT
     );
 
     //FrontRight
@@ -117,8 +118,8 @@ public final class Constants {
       6,
       7,
       3,
-      //191.074219  
-      -344.53
+      -344.53,
+      ModulePosition.FRONT_RIGHT
     );
 
     //BackLeft
@@ -126,8 +127,8 @@ public final class Constants {
       10,
       11,
       2,
-      //203.906250
-      -7.03
+      -7.03,
+      ModulePosition.BACK_LEFT
     );
 
     //BackRight
@@ -135,8 +136,8 @@ public final class Constants {
       8,
       9,
       1,
-      //155.214844
-      -114.7
+      -114.7,
+      ModulePosition.BACK_RIGHT
     );
   }
 }

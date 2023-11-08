@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 public class SwerveModule {
-  public final int moduleNumber;
 
   private final CANSparkMax wheelMotor;
   private final RelativeEncoder wheelEncoder;
@@ -35,8 +34,7 @@ public class SwerveModule {
 
   private double lastAngle;
 
-  public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
-    this.moduleNumber = moduleNumber;
+  public SwerveModule(SwerveModuleConstants moduleConstants) {
     
     turnMotor = new CANSparkMax(moduleConstants.turnMotorID, MotorType.kBrushless);
     wheelMotor = new CANSparkMax(moduleConstants.wheelMotorID, MotorType.kBrushless);
@@ -144,13 +142,8 @@ public class SwerveModule {
     turnCANCoder.configFactoryDefault();
     turnCANCoder.configAllSettings(canCoderConfiguration);
 
-    SmartDashboard.putNumber("Start" + moduleNumber, turnCANCoder.getAbsolutePosition());
-
     turnEncoder.setPositionConversionFactor(Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
     turnEncoder.setVelocityConversionFactor(Constants.kSwerve.ANGLE_RPM_TO_RADIANS_PER_SECOND);
     turnEncoder.setPosition(Math.toRadians(turnCANCoder.getAbsolutePosition()+ CANCoderOffsetDegrees));
-    //turnEncoder.setPosition(0);
-
-    SmartDashboard.putNumber("StartRotations" + moduleNumber, turnCANCoder.getAbsolutePosition());
   }
 }

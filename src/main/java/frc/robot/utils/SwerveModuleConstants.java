@@ -11,10 +11,13 @@ public class SwerveModuleConstants {
     public final int canCoderID;
     public final double canCoderOffsetDegrees;
 
-    public SwerveModuleConstants(int wheelMotorID, int turnMotorID, int canCoderID, double canCoderOffsetDegrees) {
+    public final ModulePosition position;
+
+    public SwerveModuleConstants(int wheelMotorID, int turnMotorID, int canCoderID, double canCoderOffsetDegrees, ModulePosition position) {
         this.wheelMotorID = wheelMotorID;
         this.turnMotorID = turnMotorID;
         this.canCoderID = canCoderID;
         this.canCoderOffsetDegrees = canCoderOffsetDegrees;
+        this.position = position;
     }
 }
