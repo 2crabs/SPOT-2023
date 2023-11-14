@@ -33,8 +33,8 @@ public final class Constants {
     public static final int ROTATION_AXIS = XboxController.Axis.kRightX.value;
 
     // Prevent from acclerating/decclerating to quick
-    public static final SlewRateLimiter X_DRIVE_LIMITER = new SlewRateLimiter(4);
-    public static final SlewRateLimiter Y_DRIVE_LIMITER = new SlewRateLimiter(4);
+    public static final SlewRateLimiter X_DRIVE_LIMITER = new SlewRateLimiter(2);
+    public static final SlewRateLimiter Y_DRIVE_LIMITER = new SlewRateLimiter(2);
     public static final SlewRateLimiter THETA_DRIVE_LIMITER = new SlewRateLimiter(4);
   }
 
@@ -69,9 +69,9 @@ public final class Constants {
     public static final int ANGLE_CURRENT_LIMIT = 25;
 
     /** Drive motor PID values. */
-    public static final double DRIVE_KP = 0.1;
+    public static final double DRIVE_KP = 0.05;
     public static final double DRIVE_KI = 0.0;
-    public static final double DRIVE_KD = 0.0;
+    public static final double DRIVE_KD = 0.4;
     public static final double DRIVE_KF = 0.0;
 
     /** Drive motor characterization. */
@@ -80,9 +80,9 @@ public final class Constants {
     public static final double DRIVE_KA = 0.46034;
 
     /** Angle motor PID values. */
-    public static final double ANGLE_KP = 1.5;
+    public static final double ANGLE_KP = 1.8;
     public static final double ANGLE_KI = 0.0;
-    public static final double ANGLE_KD = 0.1;
+    public static final double ANGLE_KD = 0.055;
     public static final double ANGLE_KF = 0.0;
     
     /** Swerve constraints. */
