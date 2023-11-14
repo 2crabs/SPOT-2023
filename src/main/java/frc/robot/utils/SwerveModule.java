@@ -18,8 +18,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
+/**
+ * A single swerve module. This class handles the pid controllers and encoders for the swerve Module.
+ */
 public class SwerveModule {
-  public final int moduleNumber;
 
   private final CANSparkMax wheelMotor;
   private final RelativeEncoder wheelEncoder;
@@ -27,19 +29,22 @@ public class SwerveModule {
   private final SimpleMotorFeedforward wheelFeedforward;
 
   private final CANSparkMax turnMotor;
+  /**
+   * Integrated encoder for the angle motor
+   */
   private final RelativeEncoder turnEncoder;
   private final SparkMaxPIDController turnPID;
   
-  private final CANCoder canCoder;
-  private final double canCoderOffsetDegrees;
+  private final CANCoder turnCANCoder;
+  private final double CANCoderOffsetDegrees;
 
-  private double lastAngle;
-
-  public SwerveModule(int moduleNumber, SwerveModuleConstants constants) {
-    this.moduleNumber = moduleNumber;
+  /**
+   * @param moduleConstants The constants used to set up the device ids on the can bus. These can be changed in {@link Constants}
+   */
+  public SwerveModule(SwerveModuleConstants moduleConstants) {
     
-    turnMotor = new CANSparkMax(constants.turnMotorID, MotorType.kBrushless);
-    wheelMotor = new CANSparkMax(constants.wheelMotorID, MotorType.kBrushless);
+    turnMotor = new CANSparkMax(moduleConstants.turnMotorID, MotorType.kBrushless);
+    wheelMotor = new CANSparkMax(moduleConstants.wheelMotorID, MotorType.kBrushless);
     
     wheelPID = wheelMotor.getPIDController();
     turnPID = turnMotor.getPIDController();
@@ -47,14 +52,13 @@ public class SwerveModule {
     wheelEncoder = wheelMotor.getEncoder();
     turnEncoder = turnMotor.getEncoder();
 
-    canCoder = new CANCoder(constants.canCoderID);
-    canCoderOffsetDegrees = constants.canCoderOffsetDegrees;
+    turnCANCoder = new CANCoder(moduleConstants.canCoderID);
+    CANCoderOffsetDegrees = moduleConstants.canCoderOffsetDegrees;
 
     wheelFeedforward = new SimpleMotorFeedforward(Constants.kSwerve.DRIVE_KS, Constants.kSwerve.DRIVE_KV, Constants.kSwerve.DRIVE_KA);
 
     configureDevices();
 
-    lastAngle = getState().angle.getRadians();
   }
 
   public void setState(SwerveModuleState state, boolean isOpenLoop) {
@@ -68,14 +72,12 @@ public class SwerveModule {
       wheelPID.setReference(state.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity, 0, wheelFeedforward.calculate(state.speedMetersPerSecond));
     }
 
-    // Fancy ahh if/else 
     double angle = state.angle.getRadians();
-    if (Math.abs(state.speedMetersPerSecond) <= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND) {
-      angle = lastAngle;
-    }
+    //if (Math.abs(state.speedMetersPerSecond) <= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND) {
+    //  angle = lastAngle;
+    //}
 
-    //turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
-    lastAngle = angle;
+    turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
   }
 
   public SwerveModuleState getState() {
@@ -84,84 +86,48 @@ public class SwerveModule {
     return new SwerveModuleState(velocity, angle);
   }
 
-  public double getCanCoder() {
-    return canCoder.getAbsolutePosition();
+  public double getCANCoderPosition() {
+    return turnCANCoder.getAbsolutePosition();
   }
 
+  /**
+   * Returns the angle of the turn motor. <b>NOT</b> the angle of the module
+   * @return Angle of neo turn motor
+   */
   public Rotation2d getAngle() {
     return new Rotation2d(turnEncoder.getPosition());
   }
 
+  //FIXME
   public SwerveModulePosition getPosition() {
     double distance = wheelEncoder.getPosition();
     Rotation2d rot = new Rotation2d(turnEncoder.getPosition());
     return new SwerveModulePosition(distance, rot);
   }
-
-  /*
-  public double efficientAngle(double targetAngle, double currentVal){
-    double currentAngle = correctedAngle(currentVal);
-    double reflectedTargetAngle = (targetAngle+180.0)%360.0;
-    double offset;
-    if(Math.abs(angleOffset(currentAngle, targetAngle))<90){
-      isWheelReversed = false;
-      offset = angleOffset(currentAngle, targetAngle);
-    } else {
-      isWheelReversed = true;
-      offset = angleOffset(currentAngle, reflectedTargetAngle);
-    }
-    return currentVal+offset;
-  }
-
-  // finds angle needed to change start to end
-  public double angleOffset(double start, double end){
-    double correctedStart = correctedAngle(start);
-    double correctedEnd = correctedAngle(end);
-    double distance = Math.abs(correctedStart-correctedEnd);
-    if(distance < 180){
-      return correctedEnd-correctedStart;
-    } else{
-      if(end>start){
-        return -(360-distance);
-      } else{
-        return 360-distance;
-      }
-    }
-
-    // Takes angle and turns it into equivalent angle in range 0-360
-    public double correctedAngle(double angle){
-      if(angle%360.0 < 0.0){
-        return angle%360.0 + 360.0;
-      } else {
-        return angle%360.0;
-      }
-    }
-  }
-  */
-
+  
   private void configureDevices() {
     // Drive motor configuration.
     wheelMotor.restoreFactoryDefaults();
-    wheelMotor.setInverted(Constants.kSwerve.kDriveMotorReversed);
-    wheelMotor.setIdleMode(Constants.kSwerve.kDriveIdleMode);
-    wheelMotor.setOpenLoopRampRate(Constants.kSwerve.kOpenLoopRamp);
-    wheelMotor.setClosedLoopRampRate(Constants.kSwerve.kClosedLoopRamp);
-    wheelMotor.setSmartCurrentLimit(Constants.kSwerve.kDriveCurrentLimit);
+    wheelMotor.setInverted(Constants.kSwerve.DRIVE_MOTOR_REVERSED);
+    wheelMotor.setIdleMode(Constants.kSwerve.DRIVE_IDLE_MODE);
+    wheelMotor.setOpenLoopRampRate(Constants.kSwerve.OPEN_LOOP_RAMP);
+    wheelMotor.setClosedLoopRampRate(Constants.kSwerve.CLOSED_LOOP_RAMP);
+    wheelMotor.setSmartCurrentLimit(Constants.kSwerve.DRIVE_CURRENT_LIMIT);
  
     wheelPID.setP(Constants.kSwerve.DRIVE_KP);
     wheelPID.setI(Constants.kSwerve.DRIVE_KI);
     wheelPID.setD(Constants.kSwerve.DRIVE_KD);
     wheelPID.setFF(Constants.kSwerve.DRIVE_KF);
  
-    wheelEncoder.setPositionConversionFactor(Constants.kSwerve.kDriveRotationsToMeters);
-    wheelEncoder.setVelocityConversionFactor(Constants.kSwerve.kDriveRpmToMetersPerSecond);
+    wheelEncoder.setPositionConversionFactor(Constants.kSwerve.DRIVE_ROTATIONS_TO_METERS);
+    wheelEncoder.setVelocityConversionFactor(Constants.kSwerve.DRIVE_RPM_TO_METERS_PER_SECOND);
     wheelEncoder.setPosition(0);
 
     // Angle motor configuration.
     turnMotor.restoreFactoryDefaults();
-    turnMotor.setInverted(Constants.kSwerve.kAngleMotorReversed);
-    turnMotor.setIdleMode(Constants.kSwerve.kAngleIdleMode);
-    turnMotor.setSmartCurrentLimit(Constants.kSwerve.kAngleCurrentLimit);
+    turnMotor.setInverted(Constants.kSwerve.ANGLE_MOTOR_REVERSED);
+    turnMotor.setIdleMode(Constants.kSwerve.ANGLE_IDLE_MODE);
+    turnMotor.setSmartCurrentLimit(Constants.kSwerve.ANGLE_CURRENT_LIMIT);
 
     turnPID.setP(Constants.kSwerve.ANGLE_KP);
     turnPID.setI(Constants.kSwerve.ANGLE_KI);
@@ -179,19 +145,15 @@ public class SwerveModule {
     // CanCoder configuration.
     CANCoderConfiguration canCoderConfiguration = new CANCoderConfiguration();
     canCoderConfiguration.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
-    canCoderConfiguration.sensorDirection = Constants.kSwerve.kCanCoderReversed;
+    canCoderConfiguration.sensorDirection = Constants.kSwerve.CAN_CODER_REVERSED;
     canCoderConfiguration.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
     canCoderConfiguration.sensorTimeBase = SensorTimeBase.PerSecond;
     
-    canCoder.configFactoryDefault();
-    canCoder.configAllSettings(canCoderConfiguration);
+    turnCANCoder.configFactoryDefault();
+    turnCANCoder.configAllSettings(canCoderConfiguration);
 
-    SmartDashboard.putNumber("Start" + moduleNumber, canCoder.getAbsolutePosition());
-
-    turnEncoder.setPositionConversionFactor(Constants.kSwerve.kAngleRotationsToRadians);
-    turnEncoder.setVelocityConversionFactor(Constants.kSwerve.kAngleRpmToRadiansPerSecond);
-    turnEncoder.setPosition(((canCoder.getAbsolutePosition()-canCoderOffsetDegrees)/360.0)*12.8*5.0);
-
-    SmartDashboard.putNumber("StartRotations" + moduleNumber, ((canCoderOffsetDegrees - canCoder.getAbsolutePosition())/360.0)*12.8);
+    turnEncoder.setPositionConversionFactor(Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
+    turnEncoder.setVelocityConversionFactor(Constants.kSwerve.ANGLE_RPM_TO_RADIANS_PER_SECOND);
+    turnEncoder.setPosition(Math.toRadians(turnCANCoder.getAbsolutePosition()+ CANCoderOffsetDegrees));
   }
 }

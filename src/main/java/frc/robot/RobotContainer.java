@@ -14,7 +14,7 @@ public class RobotContainer {
   private final SwerveDrive m_driveSubsystem = new SwerveDrive();
 
   private final CommandXboxController m_driverController =
-      new CommandXboxController(kControls.kDriveControllerID);
+      new CommandXboxController(kControls.DRIVE_CONTROLLER_ID);
 
   public RobotContainer() {
     configureBindings();
@@ -32,9 +32,9 @@ public class RobotContainer {
   private void configureBindings() {
     /**/
     m_driveSubsystem.setDefaultCommand(m_driveSubsystem.drive(
-      () -> -Constants.kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.kTranslationYAxis)),
-      () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.kTranslationXAxis)), 
-      () -> -Constants.kControls.THETA_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.kRotationAxis)),
+      () -> -Constants.kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_Y_AXIS)),
+      () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_X_AXIS)),
+      () -> -Constants.kControls.THETA_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.ROTATION_AXIS)),
       false
     ));
     

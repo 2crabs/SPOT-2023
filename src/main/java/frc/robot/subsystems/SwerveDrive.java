@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -14,18 +16,19 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
+import frc.robot.utils.SwerveModuleConstants;
 
 public class SwerveDrive extends SubsystemBase {
-  private final SwerveModule[] modules;
+  private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
-    modules = new SwerveModule[] {
-      new SwerveModule(0, Constants.kSwerve.MOD_0_Constants),
-      new SwerveModule(1, Constants.kSwerve.MOD_1_Constants),
-      new SwerveModule(2, Constants.kSwerve.MOD_2_Constants),
-      new SwerveModule(3, Constants.kSwerve.MOD_3_Constants),
-    };
+    modules = new EnumMap<>(ModulePosition.class);
+    modules.put(ModulePosition.FRONT_LEFT, new SwerveModule(Constants.kSwerve.FRONT_LEFT_MODULE));
+    modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
+    modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
+    modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
   }
 
   // Fancy factory command
@@ -36,9 +39,9 @@ public class SwerveDrive extends SubsystemBase {
       double rotation = rotationAxis.getAsDouble();
 
       // Make sure it doesnt run too slow so the motors don't go bye bye
-      forwardBack = Math.abs(forwardBack) < Constants.kControls.kAxisDeadzone ? 0 : forwardBack;
-      leftRight = Math.abs(leftRight) < Constants.kControls.kAxisDeadzone ? 0 : leftRight;
-      rotation = Math.abs(rotation) < Constants.kControls.kAxisDeadzone ? 0 : rotation;
+      forwardBack = Math.abs(forwardBack) < Constants.kControls.AXIS_DEADZONE ? 0 : forwardBack;
+      leftRight = Math.abs(leftRight) < Constants.kControls.AXIS_DEADZONE ? 0 : leftRight;
+      rotation = Math.abs(rotation) < Constants.kControls.AXIS_DEADZONE ? 0 : rotation;
 
       forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
       leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
@@ -49,18 +52,6 @@ public class SwerveDrive extends SubsystemBase {
       SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
 
       setModuleStates(states, isOpenLoop);
-
-      SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
-      for (int i = 0; i < modules.length; i++) {
-        System.out.println(getModuleString(i) + modules[i].getCanCoder());
-      }
-
-
-
-      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getCanCoder());
-      SmartDashboard.putNumber("FrontRight - 1", modules[1].getCanCoder());
-      SmartDashboard.putNumber("BackLeft - 2", modules[2].getCanCoder());
-      SmartDashboard.putNumber("BackRight - 3", modules[3].getCanCoder());
     }).withName("SwerveDriveBase");
   }
 
@@ -73,93 +64,29 @@ public class SwerveDrive extends SubsystemBase {
     });
   }
 
-  public Command CANCoderTuningCommand() {
-    return run(() -> {
-      SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
-      SmartDashboard.putNumber("FrontLeft - 0", modules[0].getCanCoder());
-      SmartDashboard.putNumber("FrontRight - 1", modules[1].getCanCoder());
-      SmartDashboard.putNumber("BackLeft - 2", modules[2].getCanCoder());
-      SmartDashboard.putNumber("BackRight - 3", modules[3].getCanCoder());
-    }).withName("CANCoderTuning");
-  }
-
-  public String getModuleString(int index) {
-    if(index == 0) {
-      return new String("FrontLeft");
-    }
-    if(index == 1) {
-      return new String("FrontLRight");
-    }
-    if(index == 2) {
-      return new String("BackLeft");
-    }
-    if(index == 3) {
-      return new String("BackRight");
-    }
-    return null;
-  }
-
   private void setModuleStates(SwerveModuleState[] states, boolean isOpenLoop) {
     // Makes sure the robot doesnt create a sonic boom (normalizes the speed if the magnitude is over a certain threshold)
     SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND);
 
-    for (int i = 0; i < modules.length; i++) {
-      modules[i].setState(states[modules[i].moduleNumber], isOpenLoop);
+    // iterates though the modules and gets state based on position (ModulePosition)
+    modules.forEach(
+            (key, value)->
+                    value.setState(states[positionAsNumber(key)], isOpenLoop)
+    );
+  }
+
+  /**
+   * This function is needed to convert between ModulePosition and an index uses in a SwerveModuleState array
+   * @param modulePosition The position of the module
+   * @return The corresponding index in the list returned by toSwerveModuleStates
+   */
+  public int positionAsNumber(ModulePosition modulePosition){
+    switch (modulePosition){
+      case FRONT_LEFT: return 0;
+      case FRONT_RIGHT: return 1;
+      case BACK_LEFT: return 2;
+      case BACK_RIGHT: return 3;
     }
+    return 0;
   }
-
-  public SwerveModuleState[] getStates() {
-    SwerveModuleState currentStates[] = new SwerveModuleState[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      currentStates[i] = modules[i].getState();
-    }
-    return currentStates;
-  }
-
-  public SwerveModulePosition[] getPositions() {
-    SwerveModulePosition currentStates[] = new SwerveModulePosition[modules.length];
-    for (int i = 0; i < modules.length; i++) {
-      currentStates[i] = modules[i].getPosition();
-    }
-
-    return currentStates;
-  }
-
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-  }
-
-  /*
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
-    for (SwerveModule module : modules) {
-      builder.addStringProperty(
-        String.format("Module %d", module.moduleNumber),
-        () -> {
-          SwerveModuleState state = module.getState();
-          return String.format("%6.2fm/s %6.3fdeg", state.speedMetersPerSecond, state.angle.getDegrees());
-        },
-        null);
-
-        builder.addDoubleProperty(
-          String.format("Cancoder %d", module.moduleNumber),
-          () -> module.getCanCoder(),
-          null);
-
-          
-        builder.addDoubleProperty(
-          String.format("Angle %d", module.moduleNumber),
-          () -> module.getAngle().getDegrees(),
-          null);
-      }
-    }
-  }
-  */
 }
