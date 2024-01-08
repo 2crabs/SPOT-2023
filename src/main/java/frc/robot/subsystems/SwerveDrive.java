@@ -5,22 +5,27 @@
 package frc.robot.subsystems;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 
+import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
-import frc.robot.utils.SwerveModuleConstants;
 
 public class SwerveDrive extends SubsystemBase {
+  private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);;
+
+  public static double robotDirection = 0;
+
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
@@ -29,11 +34,14 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
+    m_gyro.zeroYaw();
   }
 
   // Fancy factory command
-  public Command drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop) {
+  public Command drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
     return run(() -> {
+      SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
+
       double forwardBack = forwardBackAxis.getAsDouble();
       double leftRight = leftRightAxis.getAsDouble();
       double rotation = rotationAxis.getAsDouble();
@@ -49,7 +57,7 @@ public class SwerveDrive extends SubsystemBase {
 
       ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
 
-      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
+      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
       setModuleStates(states, isOpenLoop);
     }).withName("SwerveDriveBase");
@@ -73,6 +81,15 @@ public class SwerveDrive extends SubsystemBase {
             (key, value)->
                     value.setState(states[positionAsNumber(key)], isOpenLoop)
     );
+  }
+
+  // Zero Gyro
+  public void zeroGyroscope() {
+    m_gyro.calibrate();
+  }
+
+  public Rotation2d getGyroRotation() {
+    return new Rotation2d(m_gyro.getAngle()*(Math.PI/-180.0));
   }
 
   /**
