@@ -10,9 +10,7 @@ import java.util.function.DoubleSupplier;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +24,7 @@ public class SwerveDrive extends SubsystemBase {
 
   public static double robotDirection = 0;
 
+  SwerveDriveOdometry odometry;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
@@ -35,6 +34,11 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
     m_gyro.zeroYaw();
+    odometry = new SwerveDriveOdometry(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions());
+  }
+
+  public void periodic(){
+    odometry.update(getGyroRotation(), getModulePositions());
   }
 
   // Fancy factory command
@@ -81,6 +85,15 @@ public class SwerveDrive extends SubsystemBase {
             (key, value)->
                     value.setState(states[positionAsNumber(key)], isOpenLoop)
     );
+  }
+
+  public SwerveModulePosition[] getModulePositions(){
+    return new SwerveModulePosition[] {
+            modules.get(ModulePosition.FRONT_LEFT).getPosition(),
+            modules.get(ModulePosition.FRONT_RIGHT).getPosition(),
+            modules.get(ModulePosition.BACK_LEFT).getPosition(),
+            modules.get(ModulePosition.BACK_RIGHT).getPosition()
+    };
   }
 
   // Zero Gyro
