@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Vision extends SubsystemBase {
@@ -32,6 +33,12 @@ public class Vision extends SubsystemBase {
     targetOffsetY = m_limelightTable.getEntry("ty").getDouble(0);
     targetArea = m_limelightTable.getEntry("ta").getDouble(0);
     targetSkew = m_limelightTable.getEntry("ts").getDouble(0);
+
+    SmartDashboard.putNumber("targetXOffset", targetOffsetX);
+    SmartDashboard.putNumber("targetYOffset", targetOffsetY);
+    SmartDashboard.putNumber("targetAOffset", targetArea);
+    SmartDashboard.putNumber("targetSOffset", targetSkew);
+
   }
 
   public double getTargetOffsetX() {
