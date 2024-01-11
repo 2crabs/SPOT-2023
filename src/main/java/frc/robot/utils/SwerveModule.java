@@ -30,7 +30,7 @@ public class SwerveModule {
 
   private final CANSparkMax turnMotor;
   /**
-   * Integrated encoder for the angle motor
+   * Integrated encoder for the angle motor. When getPosition is called it returns <b>the rotation of the module</b> (not the actual motor)
    */
   private final RelativeEncoder turnEncoder;
   private final SparkMaxPIDController turnPID;
@@ -62,27 +62,23 @@ public class SwerveModule {
   }
 
   public void setState(SwerveModuleState state, boolean isOpenLoop) {
-    // this does everything in the efficientAngle function
+    //converts angle to the nearest angle of module(if opposite, the speed will be reversed)
     state = SwerveModuleState.optimize(state, getState().angle);
 
+    //if openloop it will just set power
     if (isOpenLoop) {
       double speed = state.speedMetersPerSecond / Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
       wheelPID.setReference(speed, CANSparkMax.ControlType.kDutyCycle);
     } else {
       wheelPID.setReference(state.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity, 0, wheelFeedforward.calculate(state.speedMetersPerSecond));
     }
-
-    double angle = state.angle.getRadians();
-    //if (Math.abs(state.speedMetersPerSecond) <= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND) {
-    //  angle = lastAngle;
-    //}
-
-    turnPID.setReference(angle, CANSparkMax.ControlType.kPosition);
+    //sets pid target for the rotation of the module
+    turnPID.setReference(state.angle.getRotations(), CANSparkMax.ControlType.kPosition);
   }
 
   public SwerveModuleState getState() {
     double velocity = wheelEncoder.getVelocity();
-    Rotation2d angle = new Rotation2d(turnEncoder.getPosition());
+    Rotation2d angle = new Rotation2d(turnEncoder.getPosition() * Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
     return new SwerveModuleState(velocity, angle);
   }
 
@@ -91,17 +87,16 @@ public class SwerveModule {
   }
 
   /**
-   * Returns the angle of the turn motor. <b>NOT</b> the angle of the module
-   * @return Angle of neo turn motor
+   * Returns the angle of the turn module
+   * @return Angle of module
    */
   public Rotation2d getAngle() {
-    return new Rotation2d(turnEncoder.getPosition());
+    return new Rotation2d(turnEncoder.getPosition() * Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
   }
 
-  //FIXME
   public SwerveModulePosition getPosition() {
     double distance = wheelEncoder.getPosition();
-    Rotation2d rot = new Rotation2d(turnEncoder.getPosition());
+    Rotation2d rot = getAngle();
     return new SwerveModulePosition(distance, rot);
   }
   
@@ -135,7 +130,7 @@ public class SwerveModule {
     turnPID.setFF(Constants.kSwerve.ANGLE_KF);
 
     turnPID.setPositionPIDWrappingEnabled(true);
-    turnPID.setPositionPIDWrappingMaxInput(2 * Math.PI);
+    turnPID.setPositionPIDWrappingMaxInput(1.0);
     turnPID.setPositionPIDWrappingMinInput(0);
 
     // PIDS
@@ -152,8 +147,8 @@ public class SwerveModule {
     turnCANCoder.configFactoryDefault();
     turnCANCoder.configAllSettings(canCoderConfiguration);
 
-    turnEncoder.setPositionConversionFactor(Constants.kSwerve.ANGLE_ROTATIONS_TO_RADIANS);
-    turnEncoder.setVelocityConversionFactor(Constants.kSwerve.ANGLE_RPM_TO_RADIANS_PER_SECOND);
-    turnEncoder.setPosition(Math.toRadians(turnCANCoder.getAbsolutePosition()+ CANCoderOffsetDegrees));
+    turnEncoder.setPositionConversionFactor(1/Constants.kSwerve.ANGLE_GEAR_RATIO);
+    turnEncoder.setVelocityConversionFactor(1/Constants.kSwerve.ANGLE_GEAR_RATIO);
+    turnEncoder.setPosition((turnCANCoder.getAbsolutePosition()+ CANCoderOffsetDegrees)/360.0);
   }
 }

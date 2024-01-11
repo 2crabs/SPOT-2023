@@ -59,7 +59,7 @@ public final class Constants {
     public static final double DRIVE_ROTATIONS_TO_METERS = WHEEL_CIRCUMFRENCE / DRIVE_GEAR_RATIO;
     public static final double DRIVE_RPM_TO_METERS_PER_SECOND = DRIVE_ROTATIONS_TO_METERS / 60.0;
     public static final double ANGLE_GEAR_RATIO = 12.8; // 12.8:1
-    public static final double ANGLE_ROTATIONS_TO_RADIANS = (Math.PI * 2) / ANGLE_GEAR_RATIO;
+    public static final double ANGLE_ROTATIONS_TO_RADIANS = (Math.PI * 2);
     public static final double ANGLE_RPM_TO_RADIANS_PER_SECOND = DRIVE_ROTATIONS_TO_METERS / 60.0;
 
     /** Speed ramp. */
