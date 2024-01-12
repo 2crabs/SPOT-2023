@@ -42,8 +42,7 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   // Fancy factory command
-  public Command drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
-    return run(() -> {
+  public void drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
       SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
 
       double forwardBack = forwardBackAxis.getAsDouble();
@@ -64,7 +63,6 @@ public class SwerveDrive extends SubsystemBase {
       SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
       setModuleStates(states, isOpenLoop);
-    }).withName("SwerveDriveBase");
   }
 
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {
