@@ -14,6 +14,9 @@ import frc.robot.subsystems.Vision;
 public class FollowCurrentTarget extends CommandBase {
   private final Vision m_visionSubsystem;
   private final SwerveDrive m_driveSubsystem;
+
+  private double m_forward;
+
   /** Creates a new FollowCurrentTarget. */
   public FollowCurrentTarget(Vision visionSubsystem, SwerveDrive driveSubsystem) {
     m_visionSubsystem = visionSubsystem;
@@ -30,10 +33,19 @@ public class FollowCurrentTarget extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    DoubleSupplier targetXOffset = () -> -(m_visionSubsystem.getTargetOffsetX()/54);
     SmartDashboard.putBoolean("FollowingApriltag", true);
 
-    m_driveSubsystem.drive(() -> 0, () -> 0, targetXOffset, false, false);
+    DoubleSupplier targetXOffset = () -> -(m_visionSubsystem.getTargetOffsetX()/54);
+    double targetArea = m_visionSubsystem.getTargetArea();
+
+    m_forward = 0;
+    DoubleSupplier forwardAxis = () -> m_forward;
+
+    if(targetArea <= 2.1) {
+      m_forward = 0.05;
+    }
+
+    m_driveSubsystem.drive(forwardAxis, () -> 0, targetXOffset, false, false);
   }
 
   // Called once the command ends or is interrupted.
