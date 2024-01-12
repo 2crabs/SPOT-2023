@@ -11,11 +11,11 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
 
-public class TestFollowTarget extends CommandBase {
+public class FollowCurrentTarget extends CommandBase {
   private final Vision m_visionSubsystem;
   private final SwerveDrive m_driveSubsystem;
   /** Creates a new FollowCurrentTarget. */
-  public TestFollowTarget(Vision visionSubsystem, SwerveDrive driveSubsystem) {
+  public FollowCurrentTarget(Vision visionSubsystem, SwerveDrive driveSubsystem) {
     m_visionSubsystem = visionSubsystem;
     m_driveSubsystem = driveSubsystem;
     addRequirements(visionSubsystem, driveSubsystem);
