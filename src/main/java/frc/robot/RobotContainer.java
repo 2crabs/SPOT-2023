@@ -4,12 +4,9 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.kControls;
 import frc.robot.commands.FollowCurrentTarget;
@@ -38,7 +35,12 @@ public class RobotContainer {
    */
   private void configureBindings() {
     
-    m_driverController.leftBumper().onTrue(new FollowCurrentTarget(m_visionSubsystem, m_driveSubsystem));
+    m_driverController.a().whileTrue(new FollowCurrentTarget(
+      m_visionSubsystem, 
+      m_driveSubsystem, 
+      () -> -Constants.kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_Y_AXIS)),
+      () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_X_AXIS))
+      ));
 
     m_driveSubsystem.setDefaultCommand(new RunCommand(() -> m_driveSubsystem.drive(
       () -> -Constants.kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_Y_AXIS)),
