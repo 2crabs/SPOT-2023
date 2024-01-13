@@ -88,7 +88,7 @@ public final class Constants {
     public static final double ANGLE_KF = 0.0;
     
     /** Swerve constraints. */
-    public static final double MAX_VELOCITY_METERS_PER_SECOND = 2.0;
+    public static final double MAX_VELOCITY_METERS_PER_SECOND = 4.0;
     public static final double MAX_ANGULAR_RADIANS_PER_SECOND = 4.0;
 
     /** Inversions. */
@@ -98,7 +98,7 @@ public final class Constants {
 
     /** Idle modes. */
     public static final IdleMode DRIVE_IDLE_MODE = IdleMode.kBrake;
-    public static final IdleMode ANGLE_IDLE_MODE = IdleMode.kCoast;
+    public static final IdleMode ANGLE_IDLE_MODE = IdleMode.kBrake;
 
     /** 
      * Module specific constants.

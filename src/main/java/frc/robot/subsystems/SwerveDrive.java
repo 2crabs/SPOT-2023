@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.wpilibj.SPI;
@@ -23,6 +24,9 @@ public class SwerveDrive extends SubsystemBase {
   private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);;
 
   public static double robotDirection = 0;
+
+  public double targetAngle = 0.0;
+  public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
 
   SwerveDriveOdometry odometry;
   private final EnumMap<ModulePosition,SwerveModule> modules;
@@ -45,18 +49,38 @@ public class SwerveDrive extends SubsystemBase {
   public void drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
       SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
 
+      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0 : rotationAxis.getAsDouble()/150.0;
+
+      SmartDashboard.putNumber("targetAngle", targetAngle);
+      SmartDashboard.putData(driftCorrection);
+
+      double pidRotation = 0.0;
+      if(Math.abs(getGyroRotation().getRotations()-targetAngle) > 1.5/360.0){
+        pidRotation = driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
+      } else{
+        driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
+      }
+
+      SmartDashboard.putNumber("pidRotation", pidRotation);
+
+
+      if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+        pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+      } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+        pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+      }
+      
+
       double forwardBack = forwardBackAxis.getAsDouble();
       double leftRight = leftRightAxis.getAsDouble();
-      double rotation = rotationAxis.getAsDouble();
+      double rotation = pidRotation;
 
       // Make sure it doesnt run too slow so the motors don't go bye bye
       forwardBack = Math.abs(forwardBack) < Constants.kControls.AXIS_DEADZONE ? 0 : forwardBack;
       leftRight = Math.abs(leftRight) < Constants.kControls.AXIS_DEADZONE ? 0 : leftRight;
-      rotation = Math.abs(rotation) < Constants.kControls.AXIS_DEADZONE ? 0 : rotation;
 
       forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
       leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-      rotation *= Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
 
       ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
 
