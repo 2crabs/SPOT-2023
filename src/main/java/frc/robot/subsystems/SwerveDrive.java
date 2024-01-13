@@ -49,7 +49,7 @@ public class SwerveDrive extends SubsystemBase {
   public void drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
       SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
 
-      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0 : rotationAxis.getAsDouble()/150.0;
+      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
 
       SmartDashboard.putNumber("targetAngle", targetAngle);
       SmartDashboard.putData(driftCorrection);
@@ -57,12 +57,9 @@ public class SwerveDrive extends SubsystemBase {
       double pidRotation = 0.0;
       if(Math.abs(getGyroRotation().getRotations()-targetAngle) > 1.5/360.0){
         pidRotation = driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
-      } else{
-        driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
       }
 
       SmartDashboard.putNumber("pidRotation", pidRotation);
-
 
       if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
         pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
