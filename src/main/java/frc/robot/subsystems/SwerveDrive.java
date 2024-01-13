@@ -73,7 +73,12 @@ public class SwerveDrive extends SubsystemBase {
 
       double forwardBack = forwardBackAxis.getAsDouble();
       double leftRight = leftRightAxis.getAsDouble();
+      //only stop turning if going slowly
       double rotation = pidRotation;
+      if(Math.sqrt((forwardBack*forwardBack)+(leftRight*leftRight)) < 0.15){
+        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0.0 : pidRotation;
+      }
+      
 
       // Make sure it doesnt run too slow so the motors don't go bye bye
       forwardBack = Math.abs(forwardBack) < Constants.kControls.AXIS_DEADZONE ? 0 : forwardBack;
