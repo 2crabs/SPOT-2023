@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveDrive;
@@ -16,11 +17,19 @@ public class FollowCurrentTarget extends CommandBase {
   private final SwerveDrive m_driveSubsystem;
 
   private double m_forward;
+  private double m_turn;
+
+  private DoubleSupplier m_yAxis;
+  private DoubleSupplier m_xAxis;
 
   /** Creates a new FollowCurrentTarget. */
-  public FollowCurrentTarget(Vision visionSubsystem, SwerveDrive driveSubsystem) {
+  public FollowCurrentTarget(Vision visionSubsystem, SwerveDrive driveSubsystem, DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis) {
     m_visionSubsystem = visionSubsystem;
     m_driveSubsystem = driveSubsystem;
+
+    m_yAxis = forwardBackAxis;
+    m_xAxis = leftRightAxis;
+
     addRequirements(visionSubsystem, driveSubsystem);
   }
 
@@ -35,17 +44,22 @@ public class FollowCurrentTarget extends CommandBase {
   public void execute() {
     SmartDashboard.putBoolean("FollowingApriltag", true);
 
-    DoubleSupplier targetXOffset = () -> -(m_visionSubsystem.getTargetOffsetX()/54);
+    double turnA = Math.abs(m_visionSubsystem.getTargetOffsetX()/54);
+    double turnB = m_visionSubsystem.getTargetOffsetX()/54;
+    m_turn = Math.pow(3.0, turnA);
+    m_turn = (m_turn-1) * 0.89;
+    m_turn = -Math.copySign(m_turn, turnB);
+    DoubleSupplier targetXOffset = () -> m_turn;
     double targetArea = m_visionSubsystem.getTargetArea();
 
     m_forward = 0;
     DoubleSupplier forwardAxis = () -> m_forward;
 
-    if(targetArea <= 2.1) {
-      m_forward = 0.05;
+    if(targetArea <= 2.1 && targetArea != 0.0) {
+      //m_forward = -0.2 * (2.1 - targetArea);
     }
 
-    m_driveSubsystem.drive(forwardAxis, () -> 0, targetXOffset, false, false);
+    m_driveSubsystem.drive(m_yAxis, m_xAxis, targetXOffset, false, true);
   }
 
   // Called once the command ends or is interrupted.
