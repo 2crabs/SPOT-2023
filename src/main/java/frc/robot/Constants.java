@@ -26,7 +26,11 @@ import frc.robot.utils.SwerveModuleConstants;
 
 public final class Constants {
   public static class kControls {
-    public static final double AXIS_DEADZONE = 0.1;
+    public static final double TRANSLATION_DEADZONE = 0.1;
+    public static final double ROTATION_DEADZONE = 0.05;
+
+    public static final double AUTO_TRANSLATION_DEADZONE = 0.03;
+    public static final double AUTO_ROTATION_DEADZONE = 0.03;
 
     public static final int DRIVE_CONTROLLER_ID = 0;
 

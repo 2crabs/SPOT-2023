@@ -58,11 +58,11 @@ public class SwerveDrive extends SubsystemBase {
     oldTime = m_timer.get();
   }
 
-  // Fancy factory command
+  /* Basic Swerve Drive Method */
   public void drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
       SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
 
-      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
+      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.ROTATION_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
 
       SmartDashboard.putNumber("targetAngle", targetAngle);
       SmartDashboard.putData(driftCorrection);
@@ -86,13 +86,13 @@ public class SwerveDrive extends SubsystemBase {
       //only stop turning if going slowly
       double rotation = pidRotation;
       if(Math.sqrt((forwardBack*forwardBack)+(leftRight*leftRight)) < 0.15){
-        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AXIS_DEADZONE ? 0.0 : pidRotation;
+        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.ROTATION_DEADZONE ? 0.0 : pidRotation;
       }
       
 
       // Make sure it doesnt run too slow so the motors don't go bye bye
-      forwardBack = Math.abs(forwardBack) < Constants.kControls.AXIS_DEADZONE ? 0 : forwardBack;
-      leftRight = Math.abs(leftRight) < Constants.kControls.AXIS_DEADZONE ? 0 : leftRight;
+      forwardBack = Math.abs(forwardBack) < Constants.kControls.TRANSLATION_DEADZONE ? 0 : forwardBack;
+      leftRight = Math.abs(leftRight) < Constants.kControls.TRANSLATION_DEADZONE ? 0 : leftRight;
 
       forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
       leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
@@ -103,6 +103,53 @@ public class SwerveDrive extends SubsystemBase {
 
       setModuleStates(states, isOpenLoop);
   }
+
+  public void driveAutonomous(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented, boolean useMovementDeadzone) {
+      SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
+
+      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AUTO_ROTATION_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
+
+      SmartDashboard.putNumber("targetAngle", targetAngle);
+      SmartDashboard.putData(driftCorrection);
+
+      double pidRotation = 0.0;
+      if(Math.abs(getGyroRotation().getRotations()-targetAngle) > 1.5/360.0){
+        pidRotation = driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
+      }
+
+      SmartDashboard.putNumber("pidRotation", pidRotation);
+
+      if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+        pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+      } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+        pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+      }
+      
+
+      double forwardBack = forwardBackAxis.getAsDouble();
+      double leftRight = leftRightAxis.getAsDouble();
+      //only stop turning if going slowly
+      double rotation = pidRotation;
+      if(Math.sqrt((forwardBack*forwardBack)+(leftRight*leftRight)) < 0.15){
+        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AUTO_ROTATION_DEADZONE ? 0.0 : pidRotation;
+      }
+      
+
+      if(useMovementDeadzone) {
+        forwardBack = Math.abs(forwardBack) < Constants.kControls.AUTO_TRANSLATION_DEADZONE ? 0 : forwardBack;
+        leftRight = Math.abs(leftRight) < Constants.kControls.AUTO_TRANSLATION_DEADZONE ? 0 : leftRight;
+      }
+
+      forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
+      leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
+
+      ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
+
+      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
+
+      setModuleStates(states, isOpenLoop);
+    }
+  
 
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {
     return run(() -> {
