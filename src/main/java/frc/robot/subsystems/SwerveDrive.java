@@ -11,8 +11,13 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -22,8 +27,12 @@ import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
   private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);;
+  private static Timer m_timer = new Timer();
 
-  public static double robotDirection = 0;
+  public static double oldRobotDirection = 0;
+  public static double oldTime = m_timer.get();
+
+  public static double rotationalVelocity = 0;
 
   public double targetAngle = 0.0;
   public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
@@ -43,6 +52,10 @@ public class SwerveDrive extends SubsystemBase {
 
   public void periodic(){
     odometry.update(getGyroRotation(), getModulePositions());
+    rotationalVelocity = (getGyroRotation().getDegrees()-oldRobotDirection)/0.02;
+    SmartDashboard.putNumber("rotational velocity", rotationalVelocity);
+    oldRobotDirection = getGyroRotation().getDegrees();
+    oldTime = m_timer.get();
   }
 
   // Fancy factory command
@@ -123,6 +136,10 @@ public class SwerveDrive extends SubsystemBase {
   // Zero Gyro
   public void zeroGyroscope() {
     m_gyro.calibrate();
+  }
+
+  public double getRotationalVelocity() {
+    return rotationalVelocity;
   }
 
   public Rotation2d getGyroRotation() {

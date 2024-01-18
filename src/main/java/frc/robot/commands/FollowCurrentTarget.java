@@ -6,7 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveDrive;
@@ -16,11 +16,11 @@ public class FollowCurrentTarget extends CommandBase {
   private final Vision m_visionSubsystem;
   private final SwerveDrive m_driveSubsystem;
 
-  private double m_forward;
-  private double m_turn;
+  private double m_forward, m_turn = 0;
 
-  private DoubleSupplier m_yAxis;
-  private DoubleSupplier m_xAxis;
+  private DoubleSupplier m_yAxis, m_xAxis;
+
+  private PIDController m_angleController = new PIDController(0.5, 0, 0.015);
 
   /** Creates a new FollowCurrentTarget. */
   public FollowCurrentTarget(Vision visionSubsystem, SwerveDrive driveSubsystem, DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis) {
@@ -36,7 +36,8 @@ public class FollowCurrentTarget extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    m_angleController.setSetpoint(0);
+    m_angleController.setTolerance(0.1);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -44,11 +45,16 @@ public class FollowCurrentTarget extends CommandBase {
   public void execute() {
     SmartDashboard.putBoolean("FollowingApriltag", true);
 
-    double turnA = Math.abs(m_visionSubsystem.getTargetOffsetX()/54);
-    double turnB = m_visionSubsystem.getTargetOffsetX()/54;
-    m_turn = Math.pow(3.0, turnA);
-    m_turn = (m_turn-1) * 0.89;
-    m_turn = -Math.copySign(m_turn, turnB);
+    //double turnA = Math.abs(m_visionSubsystem.getTargetOffsetX()/54);
+    double offset = m_visionSubsystem.getTargetOffsetX()/54;
+    if(m_visionSubsystem.getTargetArea() == 0) {
+      m_turn = m_turn * 0.95;
+    } else {
+    //  m_turn = Math.pow(turnA, 1.4);
+    //  m_turn = ((turnB) * 0.6) + (m_driveSubsystem.getRotationalVelocity() * 0.001);
+    //  m_turn = -Math.copySign(m_turn, turnB);
+      m_turn = m_angleController.calculate(offset, 0);
+    }
     DoubleSupplier targetXOffset = () -> m_turn;
     double targetArea = m_visionSubsystem.getTargetArea();
 
