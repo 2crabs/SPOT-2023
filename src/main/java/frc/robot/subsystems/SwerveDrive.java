@@ -10,10 +10,10 @@ import java.util.function.DoubleSupplier;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
@@ -37,7 +37,7 @@ public class SwerveDrive extends SubsystemBase {
   public double targetAngle = 0.0;
   public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
 
-  SwerveDriveOdometry odometry;
+  SwerveDrivePoseEstimator m_poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
@@ -47,13 +47,15 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
     m_gyro.zeroYaw();
-    odometry = new SwerveDriveOdometry(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions());
+    m_poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
   }
 
   public void periodic(){
-    odometry.update(getGyroRotation(), getModulePositions());
+    m_poseEstimator.update(getGyroRotation(), getModulePositions());
+
     rotationalVelocity = (getGyroRotation().getDegrees()-oldRobotDirection)/0.02;
     SmartDashboard.putNumber("rotational velocity", rotationalVelocity);
+
     oldRobotDirection = getGyroRotation().getDegrees();
     oldTime = m_timer.get();
   }

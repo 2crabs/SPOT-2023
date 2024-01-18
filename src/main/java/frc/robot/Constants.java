@@ -7,6 +7,8 @@ package frc.robot;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -58,6 +60,10 @@ public final class Constants {
       new Translation2d(-WHEEL_BASE / 2.0, TRACK_WIDTH / 2.0),
       new Translation2d(-WHEEL_BASE / 2.0, -TRACK_WIDTH / 2.0)
     );
+
+    public static final Translation2d INITIAL_TRANSLATION = new Translation2d(0, 0);
+    public static final Rotation2d INITIAL_ROTATION = new Rotation2d(0);
+    public static final Pose2d INITIAL_POSE = new Pose2d(INITIAL_TRANSLATION, INITIAL_ROTATION);
 
     public static final double DRIVE_GEAR_RATIO = 6.75; // 6.75:1
     public static final double DRIVE_ROTATIONS_TO_METERS = WHEEL_CIRCUMFRENCE / DRIVE_GEAR_RATIO;
