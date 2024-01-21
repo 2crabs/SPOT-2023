@@ -17,7 +17,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,11 +25,11 @@ import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
-  private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);;
+  private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
   public double targetAngle = 0.0;
   public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
 
-  SwerveDrivePoseEstimator m_poseEstimator;
+  SwerveDrivePoseEstimator poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
@@ -39,12 +38,12 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
-    m_gyro.zeroYaw();
-    m_poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
+    gyro.zeroYaw();
+    poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
   }
 
   public void periodic(){
-    m_poseEstimator.update(getGyroRotation(), getModulePositions());
+    poseEstimator.update(getGyroRotation(), getModulePositions());
   }
 
   /* Basic Swerve Drive Method */
@@ -171,11 +170,11 @@ public class SwerveDrive extends SubsystemBase {
 
   // Zero Gyro
   public void zeroGyroscope() {
-    m_gyro.calibrate();
+    gyro.calibrate();
   }
 
   public Rotation2d getGyroRotation() {
-    return new Rotation2d(m_gyro.getAngle()*(Math.PI/-180.0));
+    return new Rotation2d(gyro.getAngle()*(Math.PI/-180.0));
   }
 
   /**
