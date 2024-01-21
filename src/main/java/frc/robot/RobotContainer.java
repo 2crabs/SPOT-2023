@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.kControls;
+import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FollowCurrentTarget;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
@@ -42,13 +43,7 @@ public class RobotContainer {
       () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_X_AXIS))
       ));
 
-    m_driveSubsystem.setDefaultCommand(new RunCommand(() -> m_driveSubsystem.drive(
-      () -> -Constants.kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_Y_AXIS)),
-      () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_X_AXIS)),
-      () -> -Constants.kControls.THETA_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.ROTATION_AXIS)),
-      false,
-      true
-    ), m_driveSubsystem));
+    m_driveSubsystem.setDefaultCommand(new DriveCommand());
     
     //m_driveSubsystem.setDefaultCommand(m_driveSubsystem.jogTurnMotors(1 * Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND, false));
 

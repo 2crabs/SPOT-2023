@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import java.util.EnumMap;
-import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -26,8 +25,8 @@ import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
-  public double targetAngle = 0.0;
-  public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
+  public double targetRotation = 0.0;
+  public PIDController robotRotationPID = new PIDController(25.0, 0.0, 0.0);
 
   SwerveDrivePoseEstimator poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
@@ -47,97 +46,28 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   /* Basic Swerve Drive Method */
-  public void drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented) {
-      SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
-
-      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.ROTATION_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
-
-      SmartDashboard.putNumber("targetAngle", targetAngle);
-      SmartDashboard.putData(driftCorrection);
-
-      double pidRotation = 0.0;
-      if(Math.abs(getGyroRotation().getRotations()-targetAngle) > 1.5/360.0){
-        pidRotation = driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
-      }
-
-      SmartDashboard.putNumber("pidRotation", pidRotation);
+  public void drive(Double forwardSpeed, Double sidewaysSpeed, Double rotationTarget, boolean withRotation, boolean isFieldOriented) {
+      double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
 
       if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
         pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
       } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
         pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
       }
-      
 
-      double forwardBack = forwardBackAxis.getAsDouble();
-      double leftRight = leftRightAxis.getAsDouble();
-      //only stop turning if going slowly
-      double rotation = pidRotation;
-      if(Math.sqrt((forwardBack*forwardBack)+(leftRight*leftRight)) < 0.15){
-        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.ROTATION_DEADZONE ? 0.0 : pidRotation;
+      ChassisSpeeds chassisSpeeds;
+      if (withRotation){
+        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
+      } else if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
+        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+      } else {
+        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
       }
-      
-
-      // Make sure it doesnt run too slow so the motors don't go bye bye
-      forwardBack = Math.abs(forwardBack) < Constants.kControls.TRANSLATION_DEADZONE ? 0 : forwardBack;
-      leftRight = Math.abs(leftRight) < Constants.kControls.TRANSLATION_DEADZONE ? 0 : leftRight;
-
-      forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-      leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-
-      ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
 
       SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
-      setModuleStates(states, isOpenLoop);
+      setModuleStates(states, false);
   }
-
-  public void driveAutonomous(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop, boolean isFieldOriented, boolean useMovementDeadzone) {
-      SmartDashboard.putNumber("Gyro Angle", getGyroRotation().getDegrees());
-
-      targetAngle += Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AUTO_ROTATION_DEADZONE ? 0 : rotationAxis.getAsDouble()/125.0;
-
-      SmartDashboard.putNumber("targetAngle", targetAngle);
-      SmartDashboard.putData(driftCorrection);
-
-      double pidRotation = 0.0;
-      if(Math.abs(getGyroRotation().getRotations()-targetAngle) > 1.5/360.0){
-        pidRotation = driftCorrection.calculate(getGyroRotation().getRotations(), targetAngle);
-      }
-
-      SmartDashboard.putNumber("pidRotation", pidRotation);
-
-      if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-        pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-      } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-        pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-      }
-      
-
-      double forwardBack = forwardBackAxis.getAsDouble();
-      double leftRight = leftRightAxis.getAsDouble();
-      //only stop turning if going slowly
-      double rotation = pidRotation;
-      if(Math.sqrt((forwardBack*forwardBack)+(leftRight*leftRight)) < 0.15){
-        rotation = Math.abs(rotationAxis.getAsDouble()) < Constants.kControls.AUTO_ROTATION_DEADZONE ? 0.0 : pidRotation;
-      }
-      
-
-      if(useMovementDeadzone) {
-        forwardBack = Math.abs(forwardBack) < Constants.kControls.AUTO_TRANSLATION_DEADZONE ? 0 : forwardBack;
-        leftRight = Math.abs(leftRight) < Constants.kControls.AUTO_TRANSLATION_DEADZONE ? 0 : leftRight;
-      }
-
-      forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-      leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-
-      ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
-
-      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
-
-      setModuleStates(states, isOpenLoop);
-    }
-  
 
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {
     return run(() -> {
