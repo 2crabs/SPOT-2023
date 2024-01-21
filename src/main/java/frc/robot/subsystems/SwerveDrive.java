@@ -5,22 +5,30 @@
 package frc.robot.subsystems;
 
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.function.DoubleSupplier;
 
+import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
-import frc.robot.utils.SwerveModuleConstants;
 
 public class SwerveDrive extends SubsystemBase {
+  private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
+  public double targetRotation = 0.0;
+  public PIDController robotRotationPID = new PIDController(25.0, 0.0, 0.0);
+
+  SwerveDrivePoseEstimator poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
   public SwerveDrive() {
@@ -29,30 +37,37 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
+    gyro.zeroYaw();
+    poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
   }
 
-  // Fancy factory command
-  public Command drive(DoubleSupplier forwardBackAxis, DoubleSupplier leftRightAxis, DoubleSupplier rotationAxis, boolean isOpenLoop) {
-    return run(() -> {
-      double forwardBack = forwardBackAxis.getAsDouble();
-      double leftRight = leftRightAxis.getAsDouble();
-      double rotation = rotationAxis.getAsDouble();
+  public void periodic(){
+    poseEstimator.update(getGyroRotation(), getModulePositions());
+  }
 
-      // Make sure it doesnt run too slow so the motors don't go bye bye
-      forwardBack = Math.abs(forwardBack) < Constants.kControls.AXIS_DEADZONE ? 0 : forwardBack;
-      leftRight = Math.abs(leftRight) < Constants.kControls.AXIS_DEADZONE ? 0 : leftRight;
-      rotation = Math.abs(rotation) < Constants.kControls.AXIS_DEADZONE ? 0 : rotation;
+  /* Basic Swerve Drive Method */
+  public void drive(Double forwardSpeed, Double sidewaysSpeed, Double newRotationTarget, boolean withRotation, boolean isFieldOriented) {
+    targetRotation = newRotationTarget;
+    double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
 
-      forwardBack *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-      leftRight *= Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-      rotation *= Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    }
 
-      ChassisSpeeds chassisSpeeds = new ChassisSpeeds(forwardBack, leftRight, rotation);
+    ChassisSpeeds chassisSpeeds;
+    if (withRotation){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
+    } else if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    } else {
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    }
 
-      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(chassisSpeeds);
+    SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
-      setModuleStates(states, isOpenLoop);
-    }).withName("SwerveDriveBase");
+    setModuleStates(states, false);
   }
 
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {
@@ -73,6 +88,24 @@ public class SwerveDrive extends SubsystemBase {
             (key, value)->
                     value.setState(states[positionAsNumber(key)], isOpenLoop)
     );
+  }
+
+  public SwerveModulePosition[] getModulePositions(){
+    return new SwerveModulePosition[] {
+            modules.get(ModulePosition.FRONT_LEFT).getPosition(),
+            modules.get(ModulePosition.FRONT_RIGHT).getPosition(),
+            modules.get(ModulePosition.BACK_LEFT).getPosition(),
+            modules.get(ModulePosition.BACK_RIGHT).getPosition()
+    };
+  }
+
+  // Zero Gyro
+  public void zeroGyroscope() {
+    gyro.calibrate();
+  }
+
+  public Rotation2d getGyroRotation() {
+    return new Rotation2d(gyro.getAngle()*(Math.PI/-180.0));
   }
 
   /**

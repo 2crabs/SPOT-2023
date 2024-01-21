@@ -7,10 +7,13 @@ package frc.robot;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.I2C.Port;
 import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModuleConstants;
 
@@ -22,9 +25,14 @@ import frc.robot.utils.SwerveModuleConstants;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
+
 public final class Constants {
   public static class kControls {
-    public static final double AXIS_DEADZONE = 0.1;
+    public static final double TRANSLATION_DEADZONE = 0.1;
+    public static final double ROTATION_DEADZONE = 0.05;
+
+    public static final double AUTO_TRANSLATION_DEADZONE = 0.03;
+    public static final double AUTO_ROTATION_DEADZONE = 0.03;
 
     public static final int DRIVE_CONTROLLER_ID = 0;
 
@@ -53,11 +61,15 @@ public final class Constants {
       new Translation2d(-WHEEL_BASE / 2.0, -TRACK_WIDTH / 2.0)
     );
 
+    public static final Translation2d INITIAL_TRANSLATION = new Translation2d(0, 0);
+    public static final Rotation2d INITIAL_ROTATION = new Rotation2d(0);
+    public static final Pose2d INITIAL_POSE = new Pose2d(INITIAL_TRANSLATION, INITIAL_ROTATION);
+
     public static final double DRIVE_GEAR_RATIO = 6.75; // 6.75:1
     public static final double DRIVE_ROTATIONS_TO_METERS = WHEEL_CIRCUMFRENCE / DRIVE_GEAR_RATIO;
     public static final double DRIVE_RPM_TO_METERS_PER_SECOND = DRIVE_ROTATIONS_TO_METERS / 60.0;
     public static final double ANGLE_GEAR_RATIO = 12.8; // 12.8:1
-    public static final double ANGLE_ROTATIONS_TO_RADIANS = (Math.PI * 2) / ANGLE_GEAR_RATIO;
+    public static final double ANGLE_ROTATIONS_TO_RADIANS = (Math.PI * 2);
     public static final double ANGLE_RPM_TO_RADIANS_PER_SECOND = DRIVE_ROTATIONS_TO_METERS / 60.0;
 
     /** Speed ramp. */
@@ -96,7 +108,7 @@ public final class Constants {
 
     /** Idle modes. */
     public static final IdleMode DRIVE_IDLE_MODE = IdleMode.kBrake;
-    public static final IdleMode ANGLE_IDLE_MODE = IdleMode.kCoast;
+    public static final IdleMode ANGLE_IDLE_MODE = IdleMode.kBrake;
 
     /** 
      * Module specific constants.
