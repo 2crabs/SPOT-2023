@@ -43,7 +43,12 @@ public class RobotContainer {
       () -> -Constants.kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(Constants.kControls.TRANSLATION_X_AXIS))
       ));
 
-    m_driveSubsystem.setDefaultCommand(new DriveCommand());
+    m_driveSubsystem.setDefaultCommand(new DriveCommand(
+            () -> -kControls.Y_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(kControls.TRANSLATION_Y_AXIS)),
+            () -> -kControls.X_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(kControls.TRANSLATION_X_AXIS)),
+            () -> -kControls.THETA_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(kControls.ROTATION_AXIS)),
+            m_driveSubsystem
+    ));
     
     //m_driveSubsystem.setDefaultCommand(m_driveSubsystem.jogTurnMotors(1 * Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND, false));
 

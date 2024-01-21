@@ -46,27 +46,28 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   /* Basic Swerve Drive Method */
-  public void drive(Double forwardSpeed, Double sidewaysSpeed, Double rotationTarget, boolean withRotation, boolean isFieldOriented) {
-      double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
+  public void drive(Double forwardSpeed, Double sidewaysSpeed, Double newRotationTarget, boolean withRotation, boolean isFieldOriented) {
+    targetRotation = newRotationTarget;
+    double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
 
-      if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-        pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-      } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-        pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-      }
+    if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      pidRotation = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    }
 
-      ChassisSpeeds chassisSpeeds;
-      if (withRotation){
-        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
-      } else if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
-        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
-      } else {
-        chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
-      }
+    ChassisSpeeds chassisSpeeds;
+    if (withRotation){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
+    } else if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    } else {
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    }
 
-      SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
+    SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
-      setModuleStates(states, false);
+    setModuleStates(states, false);
   }
 
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {

@@ -37,7 +37,8 @@ public class DriveCommand extends CommandBase {
      */
     @Override
     public void execute() {
-
+        double newRotation = swerveDrive.targetRotation + rotationAxis.getAsDouble()/(125.0*360.0);
+        swerveDrive.drive(forwardAxis.getAsDouble(),sidewaysAxis.getAsDouble(), newRotation, true, true);
     }
 
     /**
