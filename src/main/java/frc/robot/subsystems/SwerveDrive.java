@@ -27,13 +27,6 @@ import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
   private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);;
-  private static Timer m_timer = new Timer();
-
-  public static double oldRobotDirection = 0;
-  public static double oldTime = m_timer.get();
-
-  public static double rotationalVelocity = 0;
-
   public double targetAngle = 0.0;
   public PIDController driftCorrection = new PIDController(25.0, 0.0, 0.0);
 
@@ -52,12 +45,6 @@ public class SwerveDrive extends SubsystemBase {
 
   public void periodic(){
     m_poseEstimator.update(getGyroRotation(), getModulePositions());
-
-    rotationalVelocity = (getGyroRotation().getDegrees()-oldRobotDirection)/0.02;
-    SmartDashboard.putNumber("rotational velocity", rotationalVelocity);
-
-    oldRobotDirection = getGyroRotation().getDegrees();
-    oldTime = m_timer.get();
   }
 
   /* Basic Swerve Drive Method */
@@ -185,10 +172,6 @@ public class SwerveDrive extends SubsystemBase {
   // Zero Gyro
   public void zeroGyroscope() {
     m_gyro.calibrate();
-  }
-
-  public double getRotationalVelocity() {
-    return rotationalVelocity;
   }
 
   public Rotation2d getGyroRotation() {
