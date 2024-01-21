@@ -8,13 +8,19 @@ import java.util.EnumMap;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,6 +45,30 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
     gyro.zeroYaw();
     poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
+
+    AutoBuilder.configureHolonomic(
+            this::getPose, // Robot pose supplier
+            this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getCurrentSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            this::driveWithChassisSpeeds, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    4.5, // Max module speed, in m/s
+                    0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              DriverStation.Alliance alliance = DriverStation.getAlliance();
+              return alliance == DriverStation.Alliance.Red;
+
+            },
+            this // Reference to this subsystem to set requirements
+    );
   }
 
   public void periodic(){
@@ -70,6 +100,22 @@ public class SwerveDrive extends SubsystemBase {
     setModuleStates(states, false);
   }
 
+  public void driveWithChassisSpeeds(ChassisSpeeds chassisSpeeds){
+    setModuleStates(Constants.kSwerve.KINEMATICS.toSwerveModuleStates(chassisSpeeds), false);
+  }
+
+  public ChassisSpeeds getCurrentSpeeds(){
+    return Constants.kSwerve.KINEMATICS.toChassisSpeeds(getModuleStates());
+  }
+
+  public Pose2d getPose(){
+    return poseEstimator.getEstimatedPosition();
+  }
+
+  public void resetPose(Pose2d pose){
+    poseEstimator.resetPosition(getGyroRotation(), getModulePositions(), pose);
+  }
+
   public Command jogTurnMotors(double speed, boolean isOpenLoop) {
     return run(() -> {
       ChassisSpeeds chassisSpeeds = new ChassisSpeeds(speed, 0, 0);
@@ -88,6 +134,15 @@ public class SwerveDrive extends SubsystemBase {
             (key, value)->
                     value.setState(states[positionAsNumber(key)], isOpenLoop)
     );
+  }
+
+  public SwerveModuleState[] getModuleStates(){
+    return new SwerveModuleState[] {
+            modules.get(ModulePosition.FRONT_LEFT).getState(),
+            modules.get(ModulePosition.FRONT_RIGHT).getState(),
+            modules.get(ModulePosition.BACK_LEFT).getState(),
+            modules.get(ModulePosition.BACK_RIGHT).getState()
+    };
   }
 
   public SwerveModulePosition[] getModulePositions(){
