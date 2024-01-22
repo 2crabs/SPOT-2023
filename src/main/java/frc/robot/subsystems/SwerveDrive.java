@@ -8,6 +8,8 @@ import java.util.EnumMap;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -15,7 +17,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -23,25 +27,38 @@ import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
+  private Vision visionSubsystem;
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
   public double targetRotation = 0.0;
   public PIDController robotRotationPID = new PIDController(25.0, 0.0, 0.0);
 
+  public Vector<N3> modelStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+  public Vector<N3> visionsStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+
   SwerveDrivePoseEstimator poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
-  public SwerveDrive() {
+  public SwerveDrive(Vision vision) {
+    visionSubsystem = vision;
     modules = new EnumMap<>(ModulePosition.class);
     modules.put(ModulePosition.FRONT_LEFT, new SwerveModule(Constants.kSwerve.FRONT_LEFT_MODULE));
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
     gyro.zeroYaw();
-    poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
+    poseEstimator = new SwerveDrivePoseEstimator(
+      Constants.kSwerve.KINEMATICS, 
+      getGyroRotation(), 
+      getModulePositions(), 
+      Constants.kSwerve.INITIAL_POSE,
+      modelStdDevs,
+      visionsStdDevs
+    );
   }
 
   public void periodic(){
     poseEstimator.update(getGyroRotation(), getModulePositions());
+    poseEstimator.addVisionMeasurement(visionSubsystem.getBotPose(), Timer.getFPGATimestamp());
   }
 
   /* Basic Swerve Drive Method */

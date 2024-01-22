@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.kControls;
@@ -15,8 +14,8 @@ import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
-  private final SwerveDrive m_driveSubsystem = new SwerveDrive();
   private final Vision m_visionSubsystem = new Vision();
+  private final SwerveDrive m_driveSubsystem = new SwerveDrive(m_visionSubsystem);
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(kControls.DRIVE_CONTROLLER_ID);
