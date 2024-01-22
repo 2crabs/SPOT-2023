@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -15,6 +18,8 @@ import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
+
+  private final SendableChooser<Command> autoChooser;
   private final SwerveDrive m_driveSubsystem = new SwerveDrive();
   private final Vision m_visionSubsystem = new Vision();
 
@@ -23,6 +28,9 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
+
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   /**
@@ -55,13 +63,9 @@ public class RobotContainer {
     //m_driveSubsystem.setDefaultCommand(m_driveSubsystem.CANCoderTuningCommand());
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
+
   public Command getAutonomousCommand() {
-    return null;
+    return autoChooser.getSelected();
   }
 }
 
