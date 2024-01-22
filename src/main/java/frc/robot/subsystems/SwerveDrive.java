@@ -16,7 +16,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -57,12 +56,33 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     ChassisSpeeds chassisSpeeds;
-    if (withRotation){
-      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
-    } else if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
+    if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
       chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    } else if (withRotation){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
     } else {
       chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    }
+
+    SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
+
+    setModuleStates(states, false);
+  }
+
+  public void basicDrive(Double forwardSpeed, Double sidewaysSpeed, Double rotationSpeed, boolean isFieldOriented) {
+    double targetSpeed = rotationSpeed;
+
+    if (targetSpeed>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      targetSpeed = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    } else if(targetSpeed<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
+      targetSpeed = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
+    }
+
+    ChassisSpeeds chassisSpeeds;
+    if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
+    } else {
+      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, targetSpeed);
     }
 
     SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);

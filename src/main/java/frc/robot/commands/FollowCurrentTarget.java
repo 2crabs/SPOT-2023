@@ -18,7 +18,7 @@ public class FollowCurrentTarget extends CommandBase {
 
   private double m_forward, m_turn = 0;
 
-  private DoubleSupplier m_yAxis, m_xAxis;
+  private double m_yAxis, m_xAxis;
 
   private PIDController m_angleController = new PIDController(0.5, 0, 0.015);
 
@@ -27,8 +27,8 @@ public class FollowCurrentTarget extends CommandBase {
     m_visionSubsystem = visionSubsystem;
     m_driveSubsystem = driveSubsystem;
 
-    m_yAxis = forwardBackAxis;
-    m_xAxis = leftRightAxis;
+    m_yAxis = forwardBackAxis.getAsDouble();
+    m_xAxis = leftRightAxis.getAsDouble();
 
     addRequirements(visionSubsystem, driveSubsystem);
   }
@@ -55,17 +55,18 @@ public class FollowCurrentTarget extends CommandBase {
     //  m_turn = -Math.copySign(m_turn, turnB);
       m_turn = m_angleController.calculate(offset, 0);
     }
-    DoubleSupplier targetXOffset = () -> m_turn;
+    double targetXOffset = m_turn;
+
     double targetArea = m_visionSubsystem.getTargetArea();
 
     m_forward = 0;
-    DoubleSupplier forwardAxis = () -> m_forward;
+    double forwardAxis = m_forward;
 
     if(targetArea <= 2.1 && targetArea != 0.0) {
       //m_forward = -0.2 * (2.1 - targetArea);
     }
 
-    m_driveSubsystem.drive(m_yAxis, m_xAxis, targetXOffset, false, true);
+    m_driveSubsystem.basicDrive(m_yAxis, m_xAxis, targetXOffset, true);
   }
 
   // Called once the command ends or is interrupted.
