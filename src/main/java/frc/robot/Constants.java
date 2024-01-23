@@ -152,4 +152,27 @@ public final class Constants {
       ModulePosition.BACK_RIGHT
     );
   }
+
+  /** All manipulator constants. */
+  public static class kManip {
+    public static final int INTAKE_ANGLE_MOTOR_ID = 0;
+    public static final int INTAKE_SPEED_MOTOR_ID = 0;
+
+    public static final int SHOOTER_MOTOR_A_ID = 0;
+    public static final int SHOOTER_MOTOR_B_ID = 0;
+
+    public static final double INTAKE_ANGLE_DEADZONE = 0.0;
+
+    public static final double INTAKE_ANGLE_PID_P = 0.0;
+    public static final double INTAKE_ANGLE_PID_I = 0.0;
+    public static final double INTAKE_ANGLE_PID_D = 0.0;
+
+    // First item should be how it starts and second item should be when it is down.
+    public static final double[] INTAKE_ANGLE_TOGGLE_VALUES = new double[]{0, 180};
+    // First item should be how it starts, second should be amp shooting, and other ones should be speaker shooting.
+    public static final double[] INTAKE_SPEED_STATE_VALUES = new double[]{0, 0.3, 0.7};
+
+    /** Default spin speed for the intake when intaking a note. */
+    public static final double INTAKE_SPIN_SPEED = 0;
+  }
 }
