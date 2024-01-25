@@ -35,6 +35,7 @@ public final class Constants {
     public static final double AUTO_ROTATION_DEADZONE = 0.03;
 
     public static final int DRIVE_CONTROLLER_ID = 0;
+    public static final int MANIPULATOR_CONTROLLER_ID = 1;
 
     public static final int TRANSLATION_X_AXIS = XboxController.Axis.kLeftX.value;
     public static final int TRANSLATION_Y_AXIS = XboxController.Axis.kLeftY.value;
