@@ -138,7 +138,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "New Folder",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }
