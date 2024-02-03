@@ -152,4 +152,11 @@ public final class Constants {
       ModulePosition.BACK_RIGHT
     );
   }
+
+  /** All vision constants */
+  public static class kVision {
+    // This chooses if you want to run the vision calculations on the raspberry pi or the roborio. 
+    // Usually keep as true unless testing something
+    public static final boolean PiVision = true;
+  }
 }
