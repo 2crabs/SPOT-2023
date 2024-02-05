@@ -43,8 +43,9 @@ public class DriveCommand extends CommandBase {
         double deadzoneForward = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
         double deadzoneSideways = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
 
-        if (deadzoneRotation == 0.0) {
-            swerveDrive.drive(forwardAxis.getAsDouble(), sidewaysAxis.getAsDouble(), swerveDrive.targetRotation, true, true);
+        //only use the pid rotation if going at a certain speed
+        if (deadzoneRotation == 0.0 && Math.sqrt((deadzoneForward*deadzoneForward)+(deadzoneSideways*deadzoneSideways)) > 0.15) {
+            swerveDrive.drive(deadzoneForward, deadzoneSideways, swerveDrive.targetRotation, true, true);
         } else {
             swerveDrive.basicDrive(deadzoneForward, deadzoneSideways, deadzoneRotation, true);
         }
