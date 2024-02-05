@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.subsystems.SwerveDrive;
 
 import java.util.function.DoubleSupplier;
@@ -37,10 +38,24 @@ public class DriveCommand extends CommandBase {
      */
     @Override
     public void execute() {
-        double newRotation = swerveDrive.targetRotation + rotationAxis.getAsDouble()/(125.0*360.0);
-        swerveDrive.drive(forwardAxis.getAsDouble(),sidewaysAxis.getAsDouble(), newRotation, true, true);
+
+        double deadzoneRotation = deadzone(rotationAxis.getAsDouble(), Constants.kControls.ROTATION_DEADZONE);
+        double deadzoneForward = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
+        double deadzoneSideways = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
+
+        if (deadzoneRotation == 0.0) {
+            swerveDrive.drive(forwardAxis.getAsDouble(), sidewaysAxis.getAsDouble(), swerveDrive.targetRotation, true, true);
+        } else {
+            swerveDrive.basicDrive(deadzoneForward, deadzoneSideways, deadzoneRotation, true);
+        }
     }
 
+    public double deadzone(double input, double tolerance){
+        if (Math.abs(input) < tolerance){
+            return 0.0;
+        }
+        return input;
+    }
     /**
      * <p>
      * Returns whether this command has finished. Once a command finishes -- indicated by
