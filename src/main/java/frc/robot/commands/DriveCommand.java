@@ -41,7 +41,7 @@ public class DriveCommand extends CommandBase {
 
         double deadzoneRotation = deadzone(rotationAxis.getAsDouble(), Constants.kControls.ROTATION_DEADZONE);
         double deadzoneForward = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
-        double deadzoneSideways = deadzone(forwardAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
+        double deadzoneSideways = deadzone(sidewaysAxis.getAsDouble(), Constants.kControls.TRANSLATION_DEADZONE);
 
         //only use the pid rotation if going at a certain speed
         if (deadzoneRotation == 0.0 && Math.sqrt((deadzoneForward*deadzoneForward)+(deadzoneSideways*deadzoneSideways)) > 0.15) {
