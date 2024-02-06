@@ -118,19 +118,19 @@ public final class Constants {
 
      //FrontLeft
     public static final SwerveModuleConstants FRONT_LEFT_MODULE = new SwerveModuleConstants(
-      4,
-      5,
-      0,
-      -352.97,
+      8,
+      9,
+      1,
+      -295.04,
       ModulePosition.FRONT_LEFT
     );
 
     //FrontRight
     public static final SwerveModuleConstants FRONT_RIGHT_MODULE = new SwerveModuleConstants(
-      6,
-      7,
-      3,
-      -344.53,
+      4,
+      5,
+      0,
+      -80.06,
       ModulePosition.FRONT_RIGHT
     );
 
@@ -139,16 +139,16 @@ public final class Constants {
       10,
       11,
       2,
-      -7.03,
+      -9.84,
       ModulePosition.BACK_LEFT
     );
 
     //BackRight
     public static final SwerveModuleConstants BACK_RIGHT_MODULE = new SwerveModuleConstants(
-      8,
-      9,
-      1,
-      -114.7,
+      6,
+      7,
+      3,
+      -76.46,
       ModulePosition.BACK_RIGHT
     );
   }
