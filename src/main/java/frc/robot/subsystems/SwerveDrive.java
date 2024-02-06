@@ -44,11 +44,18 @@ public class SwerveDrive extends SubsystemBase {
     poseEstimator.update(getGyroRotation(), getModulePositions());
   }
 
-  /* Basic Swerve Drive Method */
+  /** Drive command that allows the usage of a PID controller to reach a rotation
+   * @param forwardSpeed forward speed in m/s
+   * @param sidewaysSpeed sideways speed in m/s
+   * @param  newRotationTarget what rotation the robot should go to. This number is continuous and needs to be based on the current targetRotation
+   * @param withRotation determines if robot will use a PID controller to reach the newRotation Target. If you want to use the PID for rotation but don't want to set a new rotation just feed in swervedrive.targetRotation
+   * @param isFieldOriented whether to use field relative for translation
+   */
   public void drive(Double forwardSpeed, Double sidewaysSpeed, Double newRotationTarget, boolean withRotation, boolean isFieldOriented) {
     targetRotation = newRotationTarget;
-    double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
+    double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), newRotationTarget);
 
+    //Makes sure the output of PID controller stays within max angualr speed
     if (pidRotation>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
       pidRotation = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
     } else if(pidRotation<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
@@ -56,9 +63,8 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     ChassisSpeeds chassisSpeeds;
-    if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
-      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
-    } else if (withRotation){
+    // if using rotation and the robot is not at the target rotation
+    if (withRotation && !(Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360)){
       chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, pidRotation);
     } else {
       chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
@@ -69,22 +75,19 @@ public class SwerveDrive extends SubsystemBase {
     setModuleStates(states, false);
   }
 
-  public void basicDrive(Double forwardSpeed, Double sidewaysSpeed, Double rotationSpeed, boolean isFieldOriented) {
-    double targetSpeed = rotationSpeed;
-
-    if (targetSpeed>Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-      targetSpeed = Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-    } else if(targetSpeed<-1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND){
-      targetSpeed = -1.0*Constants.kSwerve.MAX_ANGULAR_RADIANS_PER_SECOND;
-    }
+  /** Drive command without PID controller for rotation
+   *
+   * @param forwardSpeed
+   * @param sidewaysSpeed
+   * @param rotation
+   * @param isFieldOriented
+   */
+  public void basicDrive(Double forwardSpeed, Double sidewaysSpeed, double rotation, boolean isFieldOriented) {
+    targetRotation = getGyroRotation().getRotations();
+    double pidRotation = robotRotationPID.calculate(getGyroRotation().getRotations(), targetRotation);
 
     ChassisSpeeds chassisSpeeds;
-    if (Math.abs(targetRotation-getGyroRotation().getRotations())< 1.5/360){
-      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, 0.0);
-    } else {
-      chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, targetSpeed);
-    }
-
+    chassisSpeeds = new ChassisSpeeds(forwardSpeed, sidewaysSpeed, rotation);
     SwerveModuleState[] states = Constants.kSwerve.KINEMATICS.toSwerveModuleStates(isFieldOriented ? ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroRotation()) : chassisSpeeds);
 
     setModuleStates(states, false);
