@@ -22,6 +22,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,6 +33,7 @@ import frc.robot.utils.SwerveModule;
 public class SwerveDrive extends SubsystemBase {
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
   public double targetRotation = 0.0;
+  public double gyroOffset = 0.0;
   public PIDController robotRotationPID = new PIDController(25.0, 0.0, 0.0);
 
   SwerveDrivePoseEstimator poseEstimator;
@@ -43,6 +46,7 @@ public class SwerveDrive extends SubsystemBase {
     modules.put(ModulePosition.BACK_LEFT, new SwerveModule(Constants.kSwerve.BACK_LEFT_MODULE));
     modules.put(ModulePosition.BACK_RIGHT, new SwerveModule(Constants.kSwerve.BACK_RIGHT_MODULE));
     gyro.zeroYaw();
+    gyroOffset = gyro.getRotation3d().getZ();
     poseEstimator = new SwerveDrivePoseEstimator(Constants.kSwerve.KINEMATICS, getGyroRotation(), getModulePositions(), Constants.kSwerve.INITIAL_POSE);
 
     AutoBuilder.configureHolonomic(
@@ -179,11 +183,12 @@ public class SwerveDrive extends SubsystemBase {
 
   // Zero Gyro
   public void zeroGyroscope() {
-    gyro.calibrate();
+    gyroOffset = getGyroRotation().getRadians();
   }
 
   public Rotation2d getGyroRotation() {
-    return new Rotation2d(gyro.getAngle()*(Math.PI/-180.0));
+    SmartDashboard.putNumber("gyro z", gyro.getAngle());
+    return new Rotation2d(gyro.getRotation3d().getZ()-gyroOffset);
   }
 
   /**
