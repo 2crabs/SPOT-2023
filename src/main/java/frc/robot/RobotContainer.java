@@ -24,7 +24,6 @@ import frc.robot.subsystems.Vision;
 public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser;
-  private final SwerveDrive m_driveSubsystem = new SwerveDrive();
   private final Vision m_visionSubsystem = new Vision();
   private final ManipulatorSubsystem m_manipulatorSubsystem = new ManipulatorSubsystem();
   private final SwerveDrive m_driveSubsystem = new SwerveDrive(m_visionSubsystem);
