@@ -13,6 +13,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.kControls;
 import frc.robot.commands.DriveCommand;
 import frc.robot.commands.FollowCurrentTarget;
+import frc.robot.commands.IntakeNote;
+import frc.robot.commands.ShootNoteIntoAmp;
+import frc.robot.commands.ShootNoteIntoSpeaker;
+import frc.robot.commands.StopIntake;
+import frc.robot.subsystems.ManipulatorSubsystem;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
 
@@ -21,10 +26,13 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
   private final SwerveDrive m_driveSubsystem = new SwerveDrive();
   private final Vision m_visionSubsystem = new Vision();
+  private final ManipulatorSubsystem m_manipulatorSubsystem = new ManipulatorSubsystem();
   private final SwerveDrive m_driveSubsystem = new SwerveDrive(m_visionSubsystem);
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(kControls.DRIVE_CONTROLLER_ID);
+  private final CommandXboxController m_manipulatorController =
+      new CommandXboxController(kControls.MANIPULATOR_CONTROLLER_ID);
 
   public RobotContainer() {
     configureBindings();
@@ -57,6 +65,13 @@ public class RobotContainer {
             () -> -kControls.THETA_DRIVE_LIMITER.calculate(m_driverController.getRawAxis(kControls.ROTATION_AXIS)),
             m_driveSubsystem
     ));
+
+    m_manipulatorSubsystem.setDefaultCommand(new StopIntake(m_manipulatorSubsystem));
+
+    m_manipulatorController.leftTrigger().whileTrue(new IntakeNote(m_manipulatorSubsystem));
+
+    m_manipulatorController.leftBumper().onTrue(new ShootNoteIntoSpeaker(m_manipulatorSubsystem));
+    m_manipulatorController.rightBumper().onTrue(new ShootNoteIntoAmp(m_manipulatorSubsystem));
     
     //m_driveSubsystem.setDefaultCommand(m_driveSubsystem.jogTurnMotors(1 * Constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND, false));
 
