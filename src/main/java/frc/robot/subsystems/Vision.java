@@ -4,8 +4,9 @@
 
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -17,6 +18,7 @@ public class Vision extends SubsystemBase {
   private final NetworkTable m_limelightTable;
 
   private double targetOffsetX, targetOffsetY, targetArea, targetSkew;
+  private double[] botPose;
   private final NetworkTableEntry m_led_entry;
 
   /** Creates a new Vision. */
@@ -33,6 +35,8 @@ public class Vision extends SubsystemBase {
     targetOffsetY = m_limelightTable.getEntry("ty").getDouble(0);
     targetArea = m_limelightTable.getEntry("ta").getDouble(0);
     targetSkew = m_limelightTable.getEntry("ts").getDouble(0);
+
+    botPose = m_limelightTable.getEntry("botpose").getDoubleArray(new double[6]);
 
     SmartDashboard.putNumber("targetXOffset", targetOffsetX);
     SmartDashboard.putNumber("targetYOffset", targetOffsetY);
@@ -52,5 +56,11 @@ public class Vision extends SubsystemBase {
   }
   public double getTargetSkew() {
     return targetSkew;
+  }
+
+  public Pose2d getBotPose() {
+    Rotation2d rotation = new Rotation2d(botPose[5]);
+    Translation2d translation = new Translation2d(botPose[0],botPose[2]);
+    return new Pose2d(translation, rotation);
   }
 }

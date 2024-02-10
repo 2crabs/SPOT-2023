@@ -12,6 +12,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,9 +23,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -31,15 +35,20 @@ import frc.robot.utils.ModulePosition;
 import frc.robot.utils.SwerveModule;
 
 public class SwerveDrive extends SubsystemBase {
+  private Vision visionSubsystem;
   private final AHRS gyro = new AHRS(SPI.Port.kMXP);;
   public double targetRotation = 0.0;
   public double gyroOffset = 0.0;
   public PIDController robotRotationPID = new PIDController(25.0, 0.0, 0.0);
 
+  public Vector<N3> modelStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
+  public Vector<N3> visionsStdDevs = VecBuilder.fill(0.9, 0.9, 0.9);
+
   SwerveDrivePoseEstimator poseEstimator;
   private final EnumMap<ModulePosition,SwerveModule> modules;
 
-  public SwerveDrive() {
+  public SwerveDrive(Vision vision) {
+    visionSubsystem = vision;
     modules = new EnumMap<>(ModulePosition.class);
     modules.put(ModulePosition.FRONT_LEFT, new SwerveModule(Constants.kSwerve.FRONT_LEFT_MODULE));
     modules.put(ModulePosition.FRONT_RIGHT, new SwerveModule(Constants.kSwerve.FRONT_RIGHT_MODULE));
@@ -72,10 +81,19 @@ public class SwerveDrive extends SubsystemBase {
             },
             this // Reference to this subsystem to set requirements
     );
+    poseEstimator = new SwerveDrivePoseEstimator(
+      Constants.kSwerve.KINEMATICS, 
+      getGyroRotation(), 
+      getModulePositions(), 
+      Constants.kSwerve.INITIAL_POSE,
+      modelStdDevs,
+      visionsStdDevs
+    );
   }
 
   public void periodic(){
     poseEstimator.update(getGyroRotation(), getModulePositions());
+    poseEstimator.addVisionMeasurement(visionSubsystem.getBotPose(), Timer.getFPGATimestamp());
   }
 
   /** Drive command that allows the usage of a PID controller to reach a rotation

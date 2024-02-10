@@ -8,7 +8,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.kControls;
@@ -22,6 +21,7 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
   private final SwerveDrive m_driveSubsystem = new SwerveDrive();
   private final Vision m_visionSubsystem = new Vision();
+  private final SwerveDrive m_driveSubsystem = new SwerveDrive(m_visionSubsystem);
 
   private final CommandXboxController m_driverController =
       new CommandXboxController(kControls.DRIVE_CONTROLLER_ID);
