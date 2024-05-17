@@ -35,6 +35,7 @@ public final class Constants {
     public static final double AUTO_ROTATION_DEADZONE = 0.03;
 
     public static final int DRIVE_CONTROLLER_ID = 0;
+    public static final int MANIPULATOR_CONTROLLER_ID = 1;
 
     public static final int TRANSLATION_X_AXIS = XboxController.Axis.kLeftX.value;
     public static final int TRANSLATION_Y_AXIS = XboxController.Axis.kLeftY.value;
@@ -118,19 +119,19 @@ public final class Constants {
 
      //FrontLeft
     public static final SwerveModuleConstants FRONT_LEFT_MODULE = new SwerveModuleConstants(
-      4,
-      5,
-      0,
-      -352.97,
+      8,
+      9,
+      1,
+      -295.04,
       ModulePosition.FRONT_LEFT
     );
 
     //FrontRight
     public static final SwerveModuleConstants FRONT_RIGHT_MODULE = new SwerveModuleConstants(
-      6,
-      7,
-      3,
-      -344.53,
+      4,
+      5,
+      0,
+      -80.06,
       ModulePosition.FRONT_RIGHT
     );
 
@@ -139,17 +140,47 @@ public final class Constants {
       10,
       11,
       2,
-      -7.03,
+      -9.84,
       ModulePosition.BACK_LEFT
     );
 
     //BackRight
     public static final SwerveModuleConstants BACK_RIGHT_MODULE = new SwerveModuleConstants(
-      8,
-      9,
-      1,
-      -114.7,
+      6,
+      7,
+      3,
+      -76.46,
       ModulePosition.BACK_RIGHT
     );
+  }
+
+  /** All vision constants */
+  public static class kVision {
+    // This chooses if you want to run the vision calculations on the raspberry pi or the roborio. 
+    // Usually keep as true unless testing something
+    public static final boolean PiVision = true;
+  }
+
+  /** All manipulator constants. */
+  public static class kManip {
+    public static final int INTAKE_ANGLE_MOTOR_ID = 0;
+    public static final int INTAKE_SPEED_MOTOR_ID = 0;
+
+    public static final int SHOOTER_MOTOR_A_ID = 0;
+    public static final int SHOOTER_MOTOR_B_ID = 0;
+
+    public static final double INTAKE_ANGLE_DEADZONE = 0.0;
+
+    public static final double INTAKE_ANGLE_PID_P = 0.0;
+    public static final double INTAKE_ANGLE_PID_I = 0.0;
+    public static final double INTAKE_ANGLE_PID_D = 0.0;
+
+    // First item should be how it starts and second item should be when it is down.
+    public static final double[] INTAKE_ANGLE_TOGGLE_VALUES = new double[]{0, 180};
+    // First item should be how it starts, second should be amp shooting, and other ones should be speaker shooting.
+    public static final double[] INTAKE_SPEED_STATE_VALUES = new double[]{0, 0.3, 0.7};
+
+    /** Default spin speed for the intake when intaking a note. */
+    public static final double INTAKE_SPIN_SPEED = 0;
   }
 }

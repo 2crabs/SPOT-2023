@@ -4,9 +4,19 @@
 
 package frc.robot;
 
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.kVision;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * project.
  */
 public class Robot extends TimedRobot {
+  Thread m_visionThread;
+
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -28,6 +40,12 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    if(!kVision.PiVision) {
+      m_visionThread = setupVisionThread();
+      m_visionThread.setDaemon(true);
+      m_visionThread.start();
+    }
   }
 
   /**
@@ -100,4 +118,33 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  public Thread setupVisionThread() {
+    return new Thread(
+      () -> {
+        // Get the USBCamera from CameraServer
+        UsbCamera camera = CameraServer.startAutomaticCapture();
+        camera.setResolution(640, 480);
+
+        // This captures Mats from the camera
+        CvSink cvSink = CameraServer.getVideo();
+        CvSource outputStream = CameraServer.putVideo("Rectangle", 640, 480);
+
+        // Reuse this mat so the computer doesn't blow up
+        Mat mat = new Mat();
+        
+        // Stop the thread when restarting robot code or deploying
+        while (!Thread.interrupted()) {
+          if (cvSink.grabFrame(mat) == 0) {
+            outputStream.notifyError(cvSink.getError());
+            continue;
+          }
+          // Put rectangle on the image (TEST)
+          Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400), new Scalar(255, 255, 255), 5);
+
+          outputStream.putFrame(mat);
+        }
+      }
+    );
+  }
 }
